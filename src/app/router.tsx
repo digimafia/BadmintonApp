@@ -12,6 +12,9 @@ import PlayerLayout from '@/layouts/PlayerLayout'
 import OrganizerLayout from '@/layouts/OrganizerLayout'
 import AdminLayout from '@/layouts/AdminLayout'
 import PlayerProfilePage from '@/features/player/pages/PlayerProfilePage'
+import TournamentListPage from '@/features/organizer/pages/TournamentListPage'
+import CreateTournamentPage from '@/features/organizer/pages/CreateTournamentPage'
+import TournamentDetailPage from '@/features/organizer/pages/TournamentDetailPage'
 
 const router = createBrowserRouter([
   {
@@ -49,7 +52,12 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <OrganizerDashboard /> },
-      { path: 'dashboard', element: <OrganizerDashboard /> }
+      { path: 'dashboard', element: <OrganizerDashboard /> },
+      // FLAT organizer child routes for tournaments (not nested under TournamentListPage)
+      { path: 'tournaments', element: <TournamentListPage /> },
+      { path: 'tournaments/new', element: <CreateTournamentPage /> },
+      { path: 'tournaments/:tournamentId', element: <TournamentDetailPage /> },
+      { path: 'tournaments/:tournamentId/edit', element: <CreateTournamentPage /> }
     ]
   },
   {
