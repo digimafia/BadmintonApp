@@ -1,0 +1,28 @@
+import { User, Role } from '@/types/auth.types'
+
+/**
+ * Mock login function
+ * Simulates API delay and returns a mock user based on role
+ */
+export const mockLogin = async (mobile: string, role: Role): Promise<User> => {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  // Basic validation (should be done in UI too, but double-check)
+  if (!/^[6-9]\d{9}$/.test(mobile)) {
+    throw new Error('Invalid mobile number')
+  }
+
+  // Generate a mock ID
+  const id = `${role.toLowerCase()}-${Date.now()}`
+
+  // Mock user
+  const user: User = {
+    id,
+    mobile,
+    role,
+    displayName: `${role} User`
+  }
+
+  return user
+}
