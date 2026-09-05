@@ -47,7 +47,13 @@ export interface Tournament {
   shuttle?: string;
   scoringFormat?: string;
   status: TournamentStatus;
-  rejectionReason?: string;
+  rejectionReason?: string | null;
+  // Admin fields
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  rejectedAt?: string | null;
+  rejectedBy?: string | null;
+  publishedAt?: string | null;
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
   submittedAt?: string; // ISO timestamp
@@ -64,13 +70,18 @@ export type TournamentFormValues = Omit<
   | 'updatedAt'
   | 'submittedAt'
   | 'status'
+  | 'approvedAt'
+  | 'approvedBy'
+  | 'rejectedAt'
+  | 'rejectedBy'
+  | 'publishedAt'
 > & {
   categories: Omit<TournamentCategory, 'id'>[];
   generalRules: string[];
 };
 
 // We'll also define a type for the tournament without the id for creation
-export type TournamentCreateInput = Omit<Tournament, 'id' | 'tournamentCode' | 'createdAt' | 'updatedAt' | 'submittedAt' | 'status'> & {
+export type TournamentCreateInput = Omit<Tournament, 'id' | 'tournamentCode' | 'createdAt' | 'updatedAt' | 'submittedAt' | 'status' | 'approvedAt' | 'approvedBy' | 'rejectedAt' | 'rejectedBy' | 'publishedAt'> & {
   categories: Omit<TournamentCategory, 'id'>[];
   generalRules: string[];
 };

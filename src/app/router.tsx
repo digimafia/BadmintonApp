@@ -15,15 +15,24 @@ import PlayerProfilePage from '@/features/player/pages/PlayerProfilePage'
 import TournamentListPage from '@/features/organizer/pages/TournamentListPage'
 import CreateTournamentPage from '@/features/organizer/pages/CreateTournamentPage'
 import TournamentDetailPage from '@/features/organizer/pages/TournamentDetailPage'
+import AdminTournamentListPage from '@/pages/admin/TournamentListPage'
+import AdminTournamentReviewPage from '@/pages/admin/TournamentReviewPage'
+import PlayerTournamentListPage from '@/features/player/pages/PlayerTournamentListPage'
+import PlayerTournamentDetailPage from '@/features/player/pages/PlayerTournamentDetailPage'
+import PlayerRegistrationsPage from '@/features/player/pages/RegistrationsPage'
+import PartnerChoicePage from '@/features/player/pages/PartnerChoicePage'
+import ExistingPartnerSearchPage from '@/features/player/pages/ExistingPartnerSearchPage'
+import GuestPartnerFormPage from '@/features/player/pages/GuestPartnerFormPage'
+import DoubleRegistrationConfirmationPage from '@/features/player/pages/DoubleRegistrationConfirmationPage'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <HomePage />
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <LoginPage />
   },
   {
     path: '/player',
@@ -38,7 +47,79 @@ const router = createBrowserRouter([
       { index: true, element: <PlayerDashboard /> },
       { path: 'dashboard', element: <PlayerDashboard /> },
       { path: 'profile', element: <PlayerProfilePage /> },
-      { path: 'profile/edit', element: <PlayerProfilePage /> }
+      { path: 'profile/edit', element: <PlayerProfilePage /> },
+      // Player tournament routes
+      {
+        path: 'tournaments',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <PlayerTournamentListPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'tournaments/:tournamentId',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <PlayerTournamentDetailPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      // Doubles partner selection routes
+      {
+        path: 'tournaments/:tournamentId/doubles/:categoryId/partner',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <PartnerChoicePage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'tournaments/:tournamentId/doubles/:categoryId/partner/search',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <ExistingPartnerSearchPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'tournaments/:tournamentId/doubles/:categoryId/guest',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <GuestPartnerFormPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'tournaments/:tournamentId/doubles/:categoryId/confirm',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <DoubleRegistrationConfirmationPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'registrations',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <PlayerRegistrationsPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
     ]
   },
   {
@@ -71,17 +152,19 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <AdminDashboard /> },
-      { path: 'dashboard', element: <AdminDashboard /> }
+      { path: 'dashboard', element: <AdminDashboard /> },
+      { path: 'tournaments', element: <AdminTournamentListPage /> },
+      { path: 'tournaments/:tournamentId', element: <AdminTournamentReviewPage /> }
     ]
   },
   {
     path: '/unauthorized',
-    element: <UnauthorizedPage />,
+    element: <UnauthorizedPage />
   },
   {
     path: '*',
-    element: <NotFoundPage />,
-  },
+    element: <NotFoundPage />
+  }
 ])
 
 export default router

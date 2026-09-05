@@ -16,7 +16,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/organizer/tournaments/123)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/organizer/tournaments/123/edit)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/player/dashboard)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(pkill *)",
+      "Bash(python3 *)"
     ]
   }
 }
