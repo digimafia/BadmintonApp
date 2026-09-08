@@ -10,7 +10,8 @@ export type EligibilityReasonCode =
   | 'BEGINNER_ONLY'
   | 'PURE_BEGINNER_ONLY'
   | 'CATEGORY_FULL'
-  | 'ALREADY_REGISTERED';
+  | 'ALREADY_REGISTERED'
+  | 'GENDER_NOT_ELIGIBLE';
 
 export interface EligibilityReason {
   code: EligibilityReasonCode;

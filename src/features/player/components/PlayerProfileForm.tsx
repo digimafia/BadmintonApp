@@ -14,6 +14,7 @@ type Props = {
 // Form-specific types matching PlayerProfileFormValues but with nullable fields for unselected state
 type PlayerProfileFormValues = {
   fullName: string
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | ''
   dob: string
   location: string
   playingSince: number | null
@@ -30,6 +31,7 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
 
   const [formValues, setFormValues] = useState<PlayerProfileFormValues>({
     fullName: '',
+    gender: '',
     dob: '',
     location: '',
     playingSince: null,
@@ -50,6 +52,7 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
       // Initialize form with existing profile values
       setFormValues({
         fullName: profile.fullName,
+        gender: profile.gender ?? '',
         dob: profile.dob,
         location: profile.location,
         playingSince: profile.playingSince,
@@ -68,6 +71,7 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
     } else if (formValues.fullName.length < 2) {
       newErrors.fullName = 'Full name must be at least 2 characters'
     }
+    if (!formValues.gender) newErrors.gender = 'Please select your gender'
 
     if (!formValues.dob) {
       newErrors.dob = 'Date of birth is required'
@@ -136,7 +140,7 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
       let playerProfile: PlayerProfile
       if (isEditing && profile) {
         // Update existing profile
-        playerProfile = await updatePlayerProfile(formValues, profile)
+        playerProfile = await updatePlayerProfile({ ...formValues, gender: formValues.gender || undefined }, profile)
         // Update the store
         updateProfileInStore(playerProfile)
       } else {
@@ -144,7 +148,7 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
         if (!user) {
           throw new Error('User not authenticated')
         }
-        playerProfile = await createPlayerProfile(formValues, user.id, user.mobile)
+        playerProfile = await createPlayerProfile({ ...formValues, gender: formValues.gender || undefined }, user.id, user.mobile)
         // Update the store
         const store = usePlayerProfileStore.getState()
         store.createProfile(playerProfile)
@@ -211,11 +215,10 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto py-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-center mb-6">
-          {isEditing ? 'Edit Player Profile' : 'Create Player Profile'}
-        </h2>
+    <div className="profile-form w-full max-w-2xl mx-auto py-4">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+        <div className="relative overflow-hidden bg-gradient-to-r from-slate-950 to-emerald-900 p-6 text-white sm:p-8"><div className="absolute -right-10 -top-12 h-40 w-40 rounded-full border-[18px] border-emerald-300/15" /><p className="relative text-xs font-bold uppercase tracking-[.2em] text-emerald-300">🏸 Player setup</p><h2 className="relative mt-2 text-3xl font-black">{isEditing ? 'Tune your player profile' : 'Create your player card'}</h2><p className="relative mt-2 text-sm text-slate-300">Your tournament identity starts here.</p></div>
+        <div className="p-6 sm:p-8">
         {submitError && (
           <p className="mb-4 text-sm text-red-600">
             {submitError}
@@ -229,11 +232,11 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
                 <img
                   src={URL.createObjectURL(formValues.profilePhoto)}
                   alt="Preview"
-                  className="w-24 h-24 rounded-full object-cover border-2 border-blue-200"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-emerald-200"
                 />
               ) : (
-                <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-gray-500">No Photo</span>
+                <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <span className="text-emerald-700 font-bold text-2xl">🏸</span>
                 </div>
               )}
               <div>
@@ -272,6 +275,8 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
               <p className="mt-2 text-sm text-red-600">{errors.fullName}</p>
             )}
           </div>
+
+          <div><label className="block text-sm font-medium mb-2">Gender</label><select value={formValues.gender} onChange={(e) => setFormValues(prev => ({ ...prev, gender: e.target.value as PlayerProfileFormValues['gender'] }))} className="w-full px-4 py-2 border rounded"><option value="">Select gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="OTHER">Other</option></select>{errors.gender && <p className="mt-2 text-sm text-red-600">{errors.gender}</p>}</div>
 
           <div>
             <label className="block text-sm font-medium mb-2">Date of Birth</label>
@@ -410,23 +415,24 @@ const PlayerProfileForm = ({ onProfileCreated, profile }: Props) => {
             </div>
           )}
 
-          <div className="flex justify-between space-x-4">
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              className="rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-700 hover:bg-slate-200"
             >
               {isEditing ? 'Cancel' : 'Reset'}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
+              className="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Profile'}
             </button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   )

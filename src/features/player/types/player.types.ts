@@ -1,12 +1,14 @@
 import { Role } from '@/types/auth.types'
 
 export type ProfileStatus = 'INCOMPLETE' | 'ACTIVE'
+export type PlayerGender = 'MALE' | 'FEMALE' | 'OTHER'
 
 export interface PlayerProfile {
   id: string // database/internal ID
   playerCode: string // e.g., PLR000001
   userId: string // references auth user ID
   fullName: string
+  gender?: PlayerGender
   dob: string // YYYY-MM-DD
   age: number // calculated from dob
   mobile: string // from auth, read-only in profile
@@ -23,6 +25,7 @@ export interface PlayerProfile {
 
 export interface PlayerProfileFormValues {
   fullName: string
+  gender?: PlayerGender
   dob: string // YYYY-MM-DD
   location: string
   playingSince: number // year

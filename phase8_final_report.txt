@@ -1,0 +1,43 @@
+Phase 8 — FINAL KNOCKOUT ENGINE REWRITE
+
+1. 3 players:
+   total matches = 3
+   first round matches = 2
+   final matches = 1
+   byes = 1
+   normal unresolved winners = null
+   -> PASS
+
+2. 4 players:
+   total matches = 3
+   final slots = null/null initially
+   -> PASS
+
+3. 5 players:
+   total matches = 7
+   first round matches = 4
+   byes = 3
+   all 5 participants unique
+   -> PASS
+
+4. 8 players:
+   total matches = 7
+   -> PASS
+
+5. No normal-match winner assumed: PASS
+
+6. BYE matches COMPLETED with winnerId: PASS
+
+7. nextMatchId/nextMatchSlot: PASS
+
+8. Doubles Team participant intact: PASS
+
+9. Published fixture immutable in store: PASS
+
+10. npm run build: PASS
+
+11. TypeScript/JSX errors: 0
+
+12. Phase 9 started: NO
+
+All requirements have been met.

@@ -1,3 +1,4 @@
+// After verifying the fix for doubles partner routing, ensuring navigation preserves categoryId
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -168,6 +169,19 @@ const PartnerChoicePage = () => {
 
   return (
     <div className="p-4">
+      <div className="flex justify-between items-start mb-4">
+        <button
+          type="button"
+          onClick={() => navigate(`/player/tournaments/${tournamentId}`)}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          Back to Tournament
+        </button>
+        <div className="text-sm text-gray-500">
+          Tournament → Category → Partner → Confirm Team
+        </div>
+      </div>
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold">
           {tournament.name}
@@ -179,7 +193,7 @@ const PartnerChoicePage = () => {
 
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-3">
-          Select Doubles Partner
+          Choose Your Doubles Partner
         </h2>
         <p className="text-sm text-gray-600">
           Category: {category.name}
@@ -203,7 +217,7 @@ const PartnerChoicePage = () => {
                 onClick={() => {
                   navigate(`/player/tournaments/${tournamentId}/doubles/${categoryId}/partner/search`)
                 }}
-                className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 shadow-md"
               >
                 Choose Existing Player
               </button>
@@ -213,7 +227,7 @@ const PartnerChoicePage = () => {
                 onClick={() => {
                   navigate(`/player/tournaments/${tournamentId}/doubles/${categoryId}/guest`)
                 }}
-                className="w-full px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                className="w-full px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 shadow-md"
               >
                 Add Guest Player
               </button>

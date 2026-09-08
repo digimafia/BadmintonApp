@@ -36,6 +36,17 @@ const GuestPartnerFormPage = () => {
 
   const { profile: currentProfile, hasProfile } = usePlayerProfileStore()
 
+  // Zustand hooks must be called at the top level, not inside event handlers
+  const setTournamentAndCategory = useDoublesRegistrationDraftStore(
+    state => state.setTournamentAndCategory
+  )
+  const setCurrentPlayer = useDoublesRegistrationDraftStore(
+    state => state.setCurrentPlayer
+  )
+  const setPartner = useDoublesRegistrationDraftStore(
+    state => state.setPartner
+  )
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<boolean>(false)
@@ -102,9 +113,8 @@ const GuestPartnerFormPage = () => {
         throw new Error('Tournament not found')
       }
 
-      const { setTournamentAndCategory, setCurrentPlayer, setPartner } = useDoublesRegistrationDraftStore()
       setTournamentAndCategory(tournamentId, categoryId)
-      setCurrentPlayer(currentProfile!.id)
+      setCurrentPlayer(currentProfile.id)
       setPartner(guestPlayer, 'GUEST', 'ACCEPTED')
 
       setSuccess(true)
@@ -218,7 +228,7 @@ const GuestPartnerFormPage = () => {
         </p>
       </div>
 
-      <form onClick={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Full Name

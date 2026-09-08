@@ -3,7 +3,267 @@
 > vite
 
 
-  VITE v5.4.21  ready in 305 ms
+  VITE v5.4.21  ready in 289 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+8:15:00 PM [vite] page reload src/features/fixtures/services/fixtureService.ts
+8:17:27 PM [vite] page reload src/features/fixtures/services/fixtureService.ts
+8:18:40 PM [vite] page reload src/features/fixtures/services/fixtureService.ts
+9:11:39 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+9:13:28 PM [vite] hmr update /src/features/player/pages/PartnerChoicePage.tsx, /src/styles/globals.css
+9:15:51 PM [vite] page reload src/features/fixtures/services/fixtureService.ts
+9:52:14 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+10:00:51 PM [vite] hmr update /src/features/player/pages/PartnerChoicePage.tsx, /src/styles/globals.css
+6:46:18 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+6:46:28 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+6:46:40 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+6:47:24 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+6:48:17 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+6:52:36 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+6:52:42 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+6:54:21 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+6:55:25 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+6:56:09 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+6:57:29 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+6:57:59 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+6:58:04 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+6:58:14 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+6:58:38 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+6:58:50 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+6:58:59 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+6:59:49 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+7:00:50 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+7:01:48 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+7:04:08 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+7:20:35 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+8:37:10 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+8:48:55 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+8:52:05 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+8:52:52 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+8:54:14 AM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+8:55:00 AM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+8:55:21 AM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+8:55:34 AM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+8:57:28 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+8:57:32 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+9:24:15 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+9:32:41 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+9:42:10 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+9:49:06 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+9:49:12 AM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+10:01:03 AM [vite] page reload src/test/fixtureTest.ts
+10:13:09 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:13:20 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:13:25 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:13:58 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:14:03 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:14:08 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:14:13 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:14:21 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:16:34 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:24:23 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+11:39:54 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+11:46:40 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+11:47:56 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+11:48:16 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+11:53:20 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+11:53:24 AM [vite] page reload src/features/fixtures/services/fixtureService.ts
+12:15:35 PM [vite] hmr update /src/layouts/PlayerLayout.tsx, /src/styles/globals.css
+12:15:53 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+12:16:06 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+12:17:51 PM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+12:18:24 PM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+12:18:36 PM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+12:18:42 PM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+1:22:35 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+1:32:08 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+1:32:15 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+1:32:17 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+1:32:26 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+1:32:36 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+1:32:50 PM [vite] hmr update /src/styles/globals.css, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+1:32:57 PM [vite] hmr update /src/styles/globals.css, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+1:33:56 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+1:33:58 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+1:34:02 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+1:34:20 PM [vite] page reload src/features/fixtures/services/fixtureService.ts
+1:34:32 PM [vite] page reload src/features/fixtures/services/fixtureService.ts
+1:37:48 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+1:39:13 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+1:48:11 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+1:48:54 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+1:51:32 PM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+1:51:51 PM [vite] hmr update /src/pages/admin/AdminDashboard.tsx, /src/styles/globals.css
+2:24:18 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+2:24:28 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+2:24:39 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+2:24:49 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+2:25:52 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+2:27:59 PM [vite] hmr update /src/styles/globals.css, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+2:28:02 PM [vite] hmr update /src/styles/globals.css, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+2:42:14 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+2:42:23 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+3:08:07 PM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+3:08:15 PM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+3:08:32 PM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+3:08:40 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+3:08:53 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+3:08:59 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+3:09:50 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+3:10:07 PM [vite] hmr update /src/pages/admin/AdminDashboard.tsx, /src/styles/globals.css
+3:10:23 PM [vite] hmr update /src/pages/admin/AdminDashboard.tsx, /src/styles/globals.css
+3:10:28 PM [vite] hmr update /src/pages/admin/AdminDashboard.tsx, /src/styles/globals.css
+3:11:26 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+3:11:35 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+3:11:42 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+3:12:24 PM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+3:12:26 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+3:12:33 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+3:12:36 PM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+3:22:35 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+3:22:37 PM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+6:39:05 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:22:31 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:26:04 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:26:26 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:29:12 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:29:34 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:31:16 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:32:32 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:34:01 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:35:39 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:37:01 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:48:14 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:51:30 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:51:50 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:52:03 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+7:59:20 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:02:24 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:02:46 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:07:00 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:07:29 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+8:07:45 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+8:14:36 PM [vite] hmr update /src/features/player/pages/GuestPartnerFormPage.tsx, /src/styles/globals.css
+8:14:54 PM [vite] hmr update /src/features/player/pages/GuestPartnerFormPage.tsx, /src/styles/globals.css
+8:14:57 PM [vite] hmr update /src/features/player/pages/GuestPartnerFormPage.tsx, /src/styles/globals.css
+8:15:41 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:22:55 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+9:03:39 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:03:48 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:04:08 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:04:30 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:04:44 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:44:18 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:44:29 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:46:39 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:50:12 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:50:20 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+9:57:40 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:00:11 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:00:40 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:03:12 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:03:45 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:04:06 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:04:26 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:07:30 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:09:04 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:09:44 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:13:37 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:43:21 PM [vite] hmr update /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/styles/globals.css
+10:53:24 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+10:54:06 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+5:32:27 AM [vite] hmr update /src/styles/globals.css, /src/features/auth/components/LoginForm.tsx
+5:32:38 AM [vite] page reload src/features/tournaments/types/tournament.types.ts
+5:33:44 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+5:36:15 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+5:39:29 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+5:40:49 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+7:15:29 AM [vite] hmr update /src/layouts/PlayerLayout.tsx, /src/styles/globals.css
+7:15:29 AM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+7:15:29 AM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+7:15:29 AM [vite] hmr update /src/pages/public/LoginPage.tsx, /src/styles/globals.css
+7:15:29 AM [vite] hmr update /src/features/organizer/pages/TournamentListPage.tsx, /src/styles/globals.css
+7:15:29 AM [vite] hmr update /src/pages/admin/TournamentListPage.tsx, /src/styles/globals.css
+7:15:29 AM [vite] hmr update /src/pages/admin/TournamentReviewPage.tsx, /src/styles/globals.css
+7:15:29 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+7:15:29 AM [vite] hmr update /src/styles/globals.css
+7:22:35 AM [vite] hmr update /src/pages/public/LoginPage.tsx, /src/styles/globals.css
+7:23:46 AM [vite] hmr update /src/features/auth/components/LoginForm.tsx, /src/styles/globals.css
+7:23:55 AM [vite] hmr update /src/styles/globals.css
+7:41:11 AM [vite] hmr update /src/features/player/pages/PlayerTournamentListPage.tsx, /src/styles/globals.css
+7:41:22 AM [vite] hmr update /src/features/player/pages/PlayerTournamentListPage.tsx, /src/styles/globals.css
+7:42:11 AM [vite] hmr update /src/layouts/OrganizerLayout.tsx, /src/styles/globals.css
+7:42:38 AM [vite] hmr update /src/layouts/AdminLayout.tsx, /src/styles/globals.css
+7:42:58 AM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+7:43:16 AM [vite] hmr update /src/pages/admin/TournamentReviewPage.tsx, /src/styles/globals.css
+8:16:15 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/features/tournaments/components/TournamentListItem.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:16:15 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+8:16:15 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+8:16:24 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:16:41 AM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+8:16:52 AM [vite] page reload src/features/organizer/pages/CategoryRegistrationsPage.tsx
+8:23:51 AM [vite] hmr update /src/features/organizer/pages/CreateTournamentPage.tsx, /src/styles/globals.css
+8:23:51 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+8:24:04 AM [vite] hmr update /src/styles/globals.css
+8:24:31 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+8:25:15 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+8:25:50 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+9:13:47 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+9:13:47 AM [vite] hmr update /src/styles/globals.css
+9:20:55 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+9:23:30 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+9:28:30 AM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+9:44:13 AM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+9:54:47 AM [vite] hmr update /src/features/auth/components/LoginForm.tsx, /src/styles/globals.css
+9:56:15 AM [vite] hmr update /src/features/organizer/pages/TournamentDetailPage.tsx, /src/styles/globals.css
+10:09:05 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:09:34 AM [vite] hmr update /src/styles/globals.css
+10:12:03 AM [vite] hmr update /src/styles/globals.css
+10:15:32 AM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+10:15:32 AM [vite] hmr update /src/pages/player/PlayerDashboard.tsx, /src/styles/globals.css
+10:16:01 AM [vite] hmr update /src/layouts/PlayerLayout.tsx, /src/styles/globals.css
+10:22:55 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+10:22:55 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:45:59 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+10:54:04 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+11:18:53 AM [vite] hmr update /src/features/player/pages/RegistrationsPage.tsx, /src/styles/globals.css
+11:21:08 AM [vite] hmr update /src/features/player/pages/PlayerProfilePage.tsx, /src/styles/globals.css
+11:28:13 AM [vite] hmr update /src/features/player/components/PlayerProfileForm.tsx, /src/styles/globals.css
+11:28:13 AM [vite] hmr update /src/styles/globals.css
+11:28:50 AM [vite] hmr update /src/features/player/components/PlayerProfileForm.tsx, /src/styles/globals.css
+11:47:32 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+11:47:32 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+11:47:56 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+11:48:23 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+11:49:40 AM [vite] page reload src/features/fixtures/store/fixtureStore.ts
+11:52:59 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+11:53:14 AM [vite] page reload src/features/fixtures/types/fixture.types.ts
+11:56:22 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+11:56:22 AM [vite] hmr update /src/styles/globals.css
+11:56:43 AM [vite] page reload src/features/organizer/pages/CategoryFixturePage.tsx
+12:19:21 PM [vite] hmr update /src/app/App.tsx, /src/styles/globals.css
+12:19:21 PM [vite] page reload src/features/organizer/pages/TournamentRegistrationsPage.tsx
+3:17:42 PM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+3:17:42 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+3:17:42 PM [vite] hmr update /src/features/organizer/pages/TournamentDetailPage.tsx, /src/styles/globals.css
+3:20:24 PM [vite] hmr update /src/pages/admin/TournamentReviewPage.tsx, /src/styles/globals.css
+3:20:24 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PlayerTournamentListPage.tsx, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/RegistrationsPage.tsx, /src/features/player/pages/GuestPartnerFormPage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx, /src/pages/admin/TournamentListPage.tsx, /src/pages/admin/AdminDashboard.tsx, /src/features/organizer/pages/TournamentListPage.tsx, /src/pages/admin/TournamentReviewPage.tsx, /src/features/organizer/pages/TournamentDetailPage.tsx, /src/features/tournaments/components/TournamentForm.tsx
+3:24:11 PM [vite] page reload src/features/player/types/player.types.ts
+3:24:11 PM [vite] page reload src/features/tournaments/types/tournament.types.ts
+3:24:11 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+3:24:11 PM [vite] hmr update /src/features/tournaments/components/TournamentForm.tsx, /src/styles/globals.css
+3:24:29 PM [vite] hmr update /src/features/player/components/PlayerProfileForm.tsx, /src/styles/globals.css
+3:24:29 PM [vite] hmr update /src/styles/globals.css, /src/features/player/components/PlayerProfileForm.tsx
+3:25:02 PM [vite] page reload src/features/eligibility/types/eligibility.types.ts
+3:25:24 PM [vite] page reload src/features/eligibility/types/eligibility.types.ts
+3:25:24 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+3:25:24 PM [vite] hmr update /src/features/player/components/PlayerProfileForm.tsx, /src/styles/globals.css
+3:29:55 PM [vite] hmr update /src/styles/globals.css, /src/features/player/pages/PartnerChoicePage.tsx, /src/features/player/pages/ExistingPartnerSearchPage.tsx, /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/features/player/pages/DoubleRegistrationConfirmationPage.tsx
+8:26:58 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+8:27:33 PM [vite] hmr update /src/features/player/pages/PlayerTournamentDetailPage.tsx, /src/styles/globals.css
+8:28:09 PM [vite] hmr update /src/styles/globals.css
+9:23:55 PM [vite] page reload src/main.tsx
+9:23:55 PM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css
+9:38:59 PM [vite] hmr update /src/styles/globals.css, /src/pages/organizer/OrganizerDashboard.tsx
+9:38:59 PM [vite] hmr update /src/pages/organizer/OrganizerDashboard.tsx, /src/styles/globals.css

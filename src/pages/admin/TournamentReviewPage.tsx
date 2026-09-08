@@ -110,10 +110,11 @@ const AdminTournamentReviewPage = () => {
   if (!tournament) {
     return <div className="p-4 text-center">No tournament data.</div>;
   }
+  const rules = Array.isArray(tournament.generalRules) ? tournament.generalRules : String(tournament.generalRules ?? '').split('\n').map(rule => rule.trim()).filter(Boolean)
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
         <h1 className="text-2xl font-bold">Tournament Review</h1>
         <div className="flex items-center space-x-3">
           <span
@@ -151,6 +152,16 @@ const AdminTournamentReviewPage = () => {
           {actionSuccess}
         </div>
       )}
+
+      <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-600">Approval checklist</p><h2 className="mt-1 text-lg font-bold text-slate-900">Review essentials before publishing</h2></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{[tournament.venueName, tournament.tournamentDate, tournament.categories.length, rules.length].filter(Boolean).length}/4 complete</span></div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">{[
+          ['Venue details', Boolean(tournament.venueName && tournament.venueAddress)],
+          ['Tournament schedule', Boolean(tournament.tournamentDate && tournament.reportingTime)],
+          ['Competition categories', tournament.categories.length > 0],
+          ['Rules and conditions', rules.length > 0],
+        ].map(([label, complete]) => <div key={String(label)} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${complete ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}><span>{complete ? '✓' : '!'}</span>{label}</div>)}</div>
+      </section>
 
       <div className="space-y-6">
         <div>
@@ -239,11 +250,11 @@ const AdminTournamentReviewPage = () => {
           )}
         </div>
 
-        {tournament.generalRules.length > 0 && (
+        {rules.length > 0 && (
           <div>
             <h2 className="text-lg font-medium mb-2">General Rules</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600">
-              {tournament.generalRules.map((rule, index) => (
+              {rules.map((rule, index) => (
                 <li key={index}>{rule}</li>
               ))}
             </ul>

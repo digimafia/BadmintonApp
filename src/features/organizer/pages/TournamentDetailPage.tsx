@@ -164,7 +164,7 @@ const TournamentDetailPage = () => {
           </div>
         )}
 
-        {tournament.generalRules.length > 0 && (
+        {Array.isArray(tournament.generalRules) && tournament.generalRules.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-medium text-gray-700 mb-2">General Rules</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600">
@@ -210,6 +210,9 @@ const TournamentDetailPage = () => {
                       <p className="text-gray-600">{category.additionalRuleNotes}</p>
                     </div>
                   )}
+                  <button onClick={() => navigate(`/organizer/tournaments/${tournament.id}/categories/${category.id}`)} className="mt-4 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-600">
+                    View registrations & fixture shuffle →
+                  </button>
                 </div>
               ))}
             </div>

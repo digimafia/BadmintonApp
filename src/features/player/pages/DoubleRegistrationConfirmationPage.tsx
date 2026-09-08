@@ -67,6 +67,13 @@ const DoubleRegistrationConfirmationPage = () => {
     clear: clearDraft
   } = useDoublesRegistrationDraftStore()
 
+  // Store selectors for use in event handlers (must be at top level)
+  const tournamentStore = useTournamentStore(state => state)
+  const registrationStore = useRegistrationStore(state => state)
+  const teamStore = useTeamStore(state => state)
+  const playerDirectoryStore = usePlayerDirectoryStore(state => state)
+  const guestPlayerStore = useGuestPlayerStore(state => state)
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<boolean>(false)
@@ -93,7 +100,6 @@ const DoubleRegistrationConfirmationPage = () => {
     // Fetch tournament if not already loaded
     if (tournamentId && categoryId) {
       const fetchTournament = async () => {
-        const tournamentStore = useTournamentStore.getState()
         if (!tournamentStore.tournament || tournamentStore.tournament.id !== tournamentId) {
           await tournamentStore.fetchTournamentById(tournamentId)
         }
@@ -103,28 +109,31 @@ const DoubleRegistrationConfirmationPage = () => {
   }, [tournamentId, categoryId])
 
   useEffect(() => {
-    // Check current player eligibility if not already checked
-    if (currentPlayerEligibility === null && hasProfile && currentProfile && tournamentId && categoryId) {
+    // Check current player eligibility when data changes
+    if (hasProfile && currentProfile && tournamentId && categoryId) {
       void checkCurrentPlayerEligibility()
     }
-  }, [hasProfile, currentProfile, tournamentId, categoryId, currentPlayerEligibility])
+  }, [hasProfile, currentProfile, tournamentId, categoryId])
 
   const checkCurrentPlayerEligibility = async () => {
     if (!tournamentId || !categoryId) return
 
-    const tournamentStore = useTournamentStore.getState()
-    if (!tournamentStore.tournament || tournamentStore.tournament.id !== tournamentId) {
-      await tournamentStore.fetchTournamentById(tournamentId)
-    }
-
-    const { tournament } = tournamentStore
-    if (!tournament) return
-
-    const { profile, hasProfile } = usePlayerProfileStore.getState()
-    if (!hasProfile || !profile) return
+    // Reset eligibility states and clear error at start of check
+    setCurrentPlayerEligibility(null)
+    setCurrentPlayerRejectionReasons([])
+    setError(null)
 
     try {
-      const tournamentRegistrations = getTournamentRegistrations(tournament.id)
+      if (!tournamentStore.tournament || tournamentStore.tournament.id !== tournamentId) {
+        await tournamentStore.fetchTournamentById(tournamentId)
+      }
+
+      const tournament = tournamentStore.tournament
+      if (!tournament) return
+
+      if (!hasProfile || !currentProfile) return
+
+      const tournamentRegistrations = registrationStore.getTournamentRegistrations(tournament.id)
       const currentRegistrations = tournamentRegistrations.filter(
         (reg) =>
           reg.categoryId === categoryId &&
@@ -132,7 +141,7 @@ const DoubleRegistrationConfirmationPage = () => {
       ).length
 
       const eligibility = evaluatePlayerEligibility(
-        profile,
+        currentProfile,
         tournament,
         tournament.categories.find(c => c.id === categoryId)!,
         currentRegistrations
@@ -141,56 +150,87 @@ const DoubleRegistrationConfirmationPage = () => {
       setCurrentPlayerRejectionReasons((eligibility.reasons ?? []).map(reason => reason.message))
       // Update eligibility in draft store
       setEligibility(eligibility.eligible, partnerEligibility)
+      // Clear error on successful check
+      setError(null)
     } catch (err) {
-      setError('Failed to check eligibility. Please try again.')
+      setCurrentPlayerEligibility(false)
+      setError(err instanceof Error ? err.message : 'Failed to check eligibility. Please try again.')
     }
   }
 
   const checkPartnerEligibility = async () => {
     if (!partnerId || !tournamentId || !categoryId) return
 
-    const tournamentStore = useTournamentStore.getState()
-    if (!tournamentStore.tournament || tournamentStore.tournament.id !== tournamentId) {
-      await tournamentStore.fetchTournamentById(tournamentId)
-    }
+    // Reset eligibility states and clear error at start of check
+    setPartnerEligibility(null)
+    setPartnerRejectionReasons([])
+    setError(null)
 
-    const { tournament } = tournamentStore
-    if (!tournament) return
-
-    const category = tournament.categories.find(c => c.id === categoryId)
-    if (!category) return
-
-    const registrationStore = useRegistrationStore.getState()
-    let tournamentRegistrations: any[] = []
     try {
-      tournamentRegistrations = getTournamentRegistrations(tournament.id)
-    } catch (err) {
-      setError('Failed to get tournament registrations. Please try again.')
-      return
-    }
+      if (!tournamentStore.tournament || tournamentStore.tournament.id !== tournamentId) {
+        await tournamentStore.fetchTournamentById(tournamentId)
+      }
 
-    const currentRegistrations = tournamentRegistrations.filter(
-      (reg) =>
-        reg.categoryId === categoryId &&
-        reg.status === 'REGISTERED'
-    ).length
+      const tournament = tournamentStore.tournament
+      if (!tournament) return
 
-    let partnerEligibilityResult: EligibilityResult | null = null
-    try {
+      const category = tournament.categories.find(c => c.id === categoryId)
+      if (!category) return
+
+      let tournamentRegistrations: any[] = []
+      try {
+        tournamentRegistrations = registrationStore.getTournamentRegistrations(tournament.id)
+      } catch (err) {
+        setPartnerEligibility(false)
+        setError('Failed to get tournament registrations. Please try again.')
+        return
+      }
+
+      const currentRegistrations = tournamentRegistrations.filter(
+        (reg) =>
+          reg.categoryId === categoryId &&
+          reg.status === 'REGISTERED'
+      ).length
+
       // We need to get the partner profile (either PlayerProfile or GuestPlayer)
       let partnerProfile: PlayerProfile | GuestPlayer | null = null
       if (partnerType === 'FULL') {
-        partnerProfile = usePlayerDirectoryStore.getState().getProfileById(partnerId)
+        partnerProfile = playerDirectoryStore.getProfileById(partnerId)
       } else if (partnerType === 'GUEST') {
-        partnerProfile = useGuestPlayerStore.getState().getGuestById(partnerId)
+        const guest = guestPlayerStore.getGuestById(partnerId)
+        if (!guest) {
+          setPartnerEligibility(false)
+          setError('Partner not found')
+          return
+        }
+        // Normalize guest data to match PlayerProfile shape for eligibility evaluation
+        partnerProfile = {
+          id: guest.id,
+          userId: '', // Guest doesn't have auth user ID
+          fullName: guest.fullName,
+          dob: guest.dob,
+          age: guest.age,
+          mobile: guest.mobile,
+          location: guest.location,
+          playingSince: guest.playingSince,
+          experienceYears: guest.experienceYears,
+          regularPlayer: guest.regularPlayer,
+          courtAcademy: guest.courtAcademy,
+          playerCode: guest.guestCode, // Use guestCode as playerCode for eligibility
+          profilePhoto: null, // Guest doesn't have profile photo
+          profileStatus: guest.profileStatus,
+          createdAt: guest.createdAt,
+          updatedAt: guest.updatedAt,
+        } as PlayerProfile
       }
 
       if (!partnerProfile) {
+        setPartnerEligibility(false)
         setError('Partner not found')
         return
       }
 
-      partnerEligibilityResult = evaluatePlayerEligibility(
+      const partnerEligibilityResult = evaluatePlayerEligibility(
         partnerProfile,
         tournament,
         category,
@@ -200,17 +240,20 @@ const DoubleRegistrationConfirmationPage = () => {
       setPartnerRejectionReasons((partnerEligibilityResult.reasons ?? []).map(reason => reason.message))
       // Update eligibility in draft store
       setEligibility(currentPlayerEligibility, partnerEligibilityResult.eligible)
+      // Clear error on successful check
+      setError(null)
     } catch (err) {
-      setError('Failed to check partner eligibility. Please try again.')
+      setPartnerEligibility(false)
+      setError(err instanceof Error ? err.message : 'Failed to check partner eligibility. Please try again.')
     }
   }
 
   // Check partner eligibility when partner data changes
   useEffect(() => {
-    if (partnerId && partnerType && partnerStatus !== null && currentPlayerEligibility !== null) {
+    if (partnerId && partnerType && partnerStatus !== null) {
       void checkPartnerEligibility()
     }
-  }, [partnerId, partnerType, partnerStatus, currentPlayerEligibility, checkPartnerEligibility])
+  }, [partnerId, partnerType, partnerStatus, tournamentId, categoryId])
 
   // Determine if we should show the partner accept button
   useEffect(() => {
@@ -230,12 +273,9 @@ const DoubleRegistrationConfirmationPage = () => {
   }, [partnerType, partnerStatus])
 
   const handleSimulatePartnerAccept = async () => {
-    // Update partner status to ACCEPTED in draft store
-    setEligibility(currentPlayerEligibility, true) // This sets partnerEligibility to true
-    // Also update the partner status in the draft store? We don't have a setter for just partner status.
-    // We'll update the draft store by setting the partner again with accepted status.
-    // But we don't have the partner profile object here. We'll skip updating the partner status in the draft store for now.
-    // Instead, we'll just set a local state to indicate acceptance and use that for confirmation.
+    // Update local state to indicate partner has accepted
+    // Note: We cannot update partner status in the draft store directly because we don't have a setter for just partner status.
+    // Partner eligibility is unaffected by acceptance, so we don't need to update it.
     setPartnerAccepted(true)
   }
 
@@ -250,7 +290,6 @@ const DoubleRegistrationConfirmationPage = () => {
         throw new Error('Missing tournament or category')
       }
 
-      const tournamentStore = useTournamentStore.getState()
       const tournament = tournamentStore.tournament
       if (!tournament) {
         throw new Error('Tournament not found')
@@ -292,7 +331,6 @@ const DoubleRegistrationConfirmationPage = () => {
       }
 
       // Check duplicate registration for current player
-      const registrationStore = useRegistrationStore.getState()
       const currentPlayerDuplicate = registrationStore.isAlreadyRegistered(
         currentProfile!.id,
         tournamentId,
@@ -305,7 +343,7 @@ const DoubleRegistrationConfirmationPage = () => {
       // Check duplicate registration for partner
       let partnerDuplicate = false
       if (partnerType === 'FULL') {
-        const partnerProfile = usePlayerDirectoryStore.getState().getProfileById(partnerId)
+        const partnerProfile = playerDirectoryStore.getProfileById(partnerId)
         if (partnerProfile) {
           partnerDuplicate = registrationStore.isAlreadyRegistered(
             partnerProfile.id,
@@ -314,7 +352,7 @@ const DoubleRegistrationConfirmationPage = () => {
           )
         }
       } else if (partnerType === 'GUEST') {
-        const guest = useGuestPlayerStore.getState().getGuestById(partnerId)
+        const guest = guestPlayerStore.getGuestById(partnerId)
         if (guest) {
           partnerDuplicate = registrationStore.isAlreadyRegistered(
             guest.id,
@@ -328,7 +366,6 @@ const DoubleRegistrationConfirmationPage = () => {
       }
 
       // Check if current player is already in another active team for same tournament/category
-      const teamStore = useTeamStore.getState()
       const currentPlayerTeams = teamStore.getPlayerTeams(currentProfile!.id)
       const currentPlayerInAnotherTeam = currentPlayerTeams.some(team =>
         team.tournamentId === tournamentId &&
@@ -342,7 +379,7 @@ const DoubleRegistrationConfirmationPage = () => {
       // Check if partner is already in another active team for same tournament/category
       let partnerInAnotherTeam = false
       if (partnerType === 'FULL') {
-        const partnerProfile = usePlayerDirectoryStore.getState().getProfileById(partnerId)
+        const partnerProfile = playerDirectoryStore.getProfileById(partnerId)
         if (partnerProfile) {
           const partnerTeams = teamStore.getPlayerTeams(partnerProfile.id)
           partnerInAnotherTeam = partnerTeams.some(team =>
@@ -352,7 +389,7 @@ const DoubleRegistrationConfirmationPage = () => {
           )
         }
       } else if (partnerType === 'GUEST') {
-        const guest = useGuestPlayerStore.getState().getGuestById(partnerId)
+        const guest = guestPlayerStore.getGuestById(partnerId)
         if (guest) {
           const guestTeams = teamStore.getPlayerTeams(guest.id)
           partnerInAnotherTeam = guestTeams.some(team =>
@@ -394,13 +431,44 @@ const DoubleRegistrationConfirmationPage = () => {
       const isGuest = partnerType === 'GUEST'
       const partnerStatusValue = 'ACCEPTED' // We only proceed if partner is accepted (guest or simulated accept)
 
+      let partnerProfile: PlayerProfile | GuestPlayer | null = null
+      if (partnerType === 'FULL') {
+        partnerProfile = playerDirectoryStore.getProfileById(partnerId)
+      } else if (partnerType === 'GUEST') {
+        const guest = guestPlayerStore.getGuestById(partnerId)
+        if (!guest) {
+          throw new Error('Partner not found')
+        }
+        // Normalize guest data to match PlayerProfile shape for registration
+        partnerProfile = {
+          id: guest.id,
+          userId: '', // Guest doesn't have auth user ID
+          fullName: guest.fullName,
+          dob: guest.dob,
+          age: guest.age,
+          mobile: guest.mobile,
+          location: guest.location,
+          playingSince: guest.playingSince,
+          experienceYears: guest.experienceYears,
+          regularPlayer: guest.regularPlayer,
+          courtAcademy: guest.courtAcademy,
+          playerCode: guest.guestCode, // Use guestCode as playerCode for registration
+          profilePhoto: null, // Guest doesn't have profile photo
+          profileStatus: guest.profileStatus,
+          createdAt: guest.createdAt,
+          updatedAt: guest.updatedAt,
+        } as PlayerProfile
+      }
+
+      if (!partnerProfile) {
+        throw new Error('Partner not found')
+      }
+
       const registration = await registrationService.registerDoublesTeam(
         tournamentId,
         categoryId,
         currentProfile!,
-        partnerType === 'FULL'
-          ? usePlayerDirectoryStore.getState().getProfileById(partnerId)!
-          : useGuestPlayerStore.getState().getGuestById(partnerId)!,
+        partnerProfile,
         partnerStatusValue
       )
 

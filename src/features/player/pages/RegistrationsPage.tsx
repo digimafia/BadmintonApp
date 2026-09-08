@@ -80,25 +80,15 @@ const PlayerRegistrationsPage = () => {
 
   if (registrations.length === 0) {
     return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">
-          My Registrations
-        </h1>
-
-        <div className="text-center py-8">
-          <p className="text-gray-600">
-            You have not registered for any tournaments yet.
-          </p>
-
-          <div className="mt-4">
-            <button
+      <div className="space-y-6">
+        <section className="rounded-3xl bg-gradient-to-r from-slate-950 to-emerald-900 p-6 text-white"><p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-300">My match pass</p><h1 className="mt-2 text-3xl font-black">My registrations</h1></section>
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center shadow-sm"><div className="text-4xl">🏸</div><p className="mt-4 text-lg font-bold text-slate-800">No tournaments yet</p><p className="mt-2 text-sm text-slate-500">Your confirmed tournament entries will appear here.</p><div className="mt-5"><button
               type="button"
               onClick={() => navigate('/player/tournaments')}
-              className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600"
             >
               Browse Tournaments
-            </button>
-          </div>
+            </button></div>
         </div>
       </div>
     )
@@ -111,38 +101,24 @@ const PlayerRegistrationsPage = () => {
   })
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        My Registrations
-      </h1>
+    <div className="space-y-6">
+      <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 to-emerald-900 p-6 text-white sm:p-8"><p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-300">My match pass</p><div className="mt-2 flex flex-wrap items-end justify-between gap-3"><div><h1 className="text-3xl font-black">My registrations</h1><p className="mt-2 text-sm text-slate-300">Your upcoming tournaments and team entries.</p></div><span className="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-sm font-bold text-emerald-200">{registrations.filter(item => item.status === 'REGISTERED').length} Active</span></div></section>
 
       <div className="space-y-4">
         {registrations.map((registration) => {
           const tournament = tournamentMap.get(registration.tournamentId)
 
           return (
-            <div
-              key={registration.id}
-              className="border rounded-lg p-4"
-            >
-              <div className="flex justify-between items-start gap-4 mb-3">
+            <article key={registration.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+              <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-teal-400" />
+              <div className="p-5"><div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
                 <div>
                   {tournament ? (
                     <>
-                      <h3 className="text-lg font-semibold">
+                      <div className="mb-3 flex flex-wrap gap-2"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${registration.status === 'REGISTERED' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{registration.status === 'REGISTERED' ? 'CONFIRMED' : 'CANCELLED'}</span><span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{registration.eventType}</span></div><h3 className="text-xl font-bold text-slate-900">
                         {tournament.name}
                       </h3>
-
-                      <p className="text-sm text-gray-600">
-                        Tournament Code: {tournament.tournamentCode}
-                      </p>
-
-                      <p className="text-sm text-gray-600">
-                        Date:{' '}
-                        {new Date(
-                          tournament.tournamentDate
-                        ).toLocaleDateString()}
-                      </p>
+                      <p className="mt-2 text-sm font-medium text-slate-600">📅 {new Date(tournament.tournamentDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} · 📍 {tournament.venueName}</p>
                     </>
                   ) : (
                     <h3 className="text-lg font-semibold">
@@ -150,28 +126,7 @@ const PlayerRegistrationsPage = () => {
                     </h3>
                   )}
 
-                  <p className="text-sm text-gray-600">
-                    Category: {registration.categoryName}
-                  </p>
-
-                  <p className="text-sm text-gray-600">
-                    Event Type: {registration.eventType}
-                  </p>
-
-                  <p className="text-sm text-gray-600">
-                    Registration Code: {registration.registrationCode}
-                  </p>
-
-                  <p className="text-sm text-gray-600">
-                    Status: {registration.status}
-                  </p>
-
-                  <p className="text-sm text-gray-600">
-                    Registered:{' '}
-                    {new Date(
-                      registration.registeredAt
-                    ).toLocaleDateString()}
-                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm"><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Category</p><p className="mt-1 font-bold text-slate-700">{registration.categoryName}</p></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Entry pass</p><p className="mt-1 font-bold text-slate-700">{registration.registrationCode}</p></div></div>
 
                   {registration.status === 'CANCELLED' &&
                     registration.cancelledAt && (
@@ -184,7 +139,7 @@ const PlayerRegistrationsPage = () => {
                     )}
                 </div>
 
-                <div className="space-x-2">
+                <div className="shrink-0">
                   {registration.status !== 'CANCELLED' && (
                     <button
                       type="button"
@@ -193,14 +148,14 @@ const PlayerRegistrationsPage = () => {
                           `/player/tournaments/${registration.tournamentId}`
                         )
                       }
-                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600 sm:w-auto"
                     >
                       View Tournament
                     </button>
                   )}
                 </div>
-              </div>
-            </div>
+              </div></div>
+            </article>
           )
         })}
       </div>
