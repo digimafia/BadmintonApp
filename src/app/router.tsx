@@ -24,6 +24,13 @@ import PartnerChoicePage from '@/features/player/pages/PartnerChoicePage'
 import ExistingPartnerSearchPage from '@/features/player/pages/ExistingPartnerSearchPage'
 import GuestPartnerFormPage from '@/features/player/pages/GuestPartnerFormPage'
 import DoubleRegistrationConfirmationPage from '@/features/player/pages/DoubleRegistrationConfirmationPage'
+import PlayerFixturesPage from '@/features/player/pages/PlayerFixturesPage'
+import TournamentRegistrationsPage from '@/features/organizer/pages/TournamentRegistrationsPage'
+import MatchScoringPage from '@/features/organizer/pages/MatchScoringPage'
+import CategoryFixturePage from '@/features/organizer/pages/CategoryFixturePage'
+import PlayerNotificationsPage from '@/features/notifications/pages/PlayerNotificationsPage'
+import OrganizerNotificationsPage from '@/features/notifications/pages/OrganizerNotificationsPage'
+import AdminNotificationsPage from '@/features/notifications/pages/AdminNotificationsPage'
 
 const router = createBrowserRouter([
   {
@@ -120,6 +127,17 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      { path: 'fixtures', element: <PlayerFixturesPage /> },
+      {
+        path: 'notifications',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'PLAYER' ]}>
+              <PlayerNotificationsPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
     ]
   },
   {
@@ -138,7 +156,41 @@ const router = createBrowserRouter([
       { path: 'tournaments', element: <TournamentListPage /> },
       { path: 'tournaments/new', element: <CreateTournamentPage /> },
       { path: 'tournaments/:tournamentId', element: <TournamentDetailPage /> },
-      { path: 'tournaments/:tournamentId/edit', element: <CreateTournamentPage /> }
+      { path: 'tournaments/:tournamentId/edit', element: <CreateTournamentPage /> },
+      { path: 'tournaments/:tournamentId/registrations', element: <TournamentRegistrationsPage /> },
+      // Organizer tournament category routes
+      {
+        path: 'tournaments/:tournamentId/categories/:categoryId',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'ORGANIZER' ]}>
+              <CategoryFixturePage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      // Organizer match scoring route
+      {
+        path: 'tournaments/:tournamentId/categories/:categoryId/matches/:matchId/score',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'ORGANIZER' ]}>
+              <MatchScoringPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
+      // Organizer notifications route
+      {
+        path: 'notifications',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'ORGANIZER' ]}>
+              <OrganizerNotificationsPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      },
     ]
   },
   {
@@ -154,7 +206,16 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: 'dashboard', element: <AdminDashboard /> },
       { path: 'tournaments', element: <AdminTournamentListPage /> },
-      { path: 'tournaments/:tournamentId', element: <AdminTournamentReviewPage /> }
+      { path: 'tournaments/:tournamentId', element: <AdminTournamentReviewPage /> },
+      { path: 'notifications',
+        element: (
+          <ProtectedRoute>
+            <RoleRoute roles={[ 'ADMIN' ]}>
+              <AdminNotificationsPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        ),
+      }
     ]
   },
   {

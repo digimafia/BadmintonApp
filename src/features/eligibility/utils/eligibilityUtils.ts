@@ -2,6 +2,8 @@ import { PlayerProfile } from '@/features/player/types/player.types';
 import { GuestPlayer } from '@/features/player/types/guest.player.types';
 import { Tournament, TournamentCategory } from '@/features/tournaments/types/tournament.types';
 import { EligibilityReason, EligibilityResult } from '@/features/eligibility/types/eligibility.types';
+import { MedalHistory } from '@/features/medals/types/medalHistory.types';
+import { normalizeTimeValue } from '@/features/tournaments/utils/tournamentHelpers';
 
 /**
  * Calculate age from date of birth (YYYY-MM-DD)
@@ -44,9 +46,11 @@ export const isTournamentPublished = (tournament: Tournament): boolean => {
  */
 export const isRegistrationOpen = (tournament: Tournament): boolean => {
   const now = new Date();
-  const closeDate = new Date(tournament.registrationCloseDate);
-  const closeTime = tournament.registrationCloseTime.split(':');
-  closeDate.setHours(parseInt(closeTime[0]), parseInt(closeTime[1]), 0, 0);
+  const closeDate = new Date(`${tournament.registrationCloseDate}T00:00:00`);
+  const closeTime = normalizeTimeValue(tournament.registrationCloseTime);
+  if (Number.isNaN(closeDate.getTime()) || !closeTime) return false;
+  const [hours, minutes] = closeTime.split(':').map(Number);
+  closeDate.setHours(hours, minutes, 0, 0);
   return now < closeDate;
 };
 
@@ -77,27 +81,47 @@ export const checkAgeEligibility = (
   return reasons;
 };
 
+export const checkGenderEligibility = (profile: PlayerProfile | GuestPlayer, category: TournamentCategory, tournament?: Tournament): EligibilityReason[] => {
+  const legacyText = `${tournament?.name ?? ''} ${category.additionalRuleNotes ?? ''}`.toLowerCase();
+  const inferredRestriction = /women|woman|ladies|female/.test(legacyText) ? 'WOMEN_ONLY' : /men only|mens|men's|male/.test(legacyText) ? 'MEN_ONLY' : 'OPEN';
+  const restriction = category.genderEligibility ?? inferredRestriction;
+  const gender = 'gender' in profile ? profile.gender : undefined;
+  if (restriction === 'WOMEN_ONLY' && gender !== 'FEMALE') return [{ code: 'GENDER_NOT_ELIGIBLE', message: 'This category is open to women players only' }];
+  if (restriction === 'MEN_ONLY' && gender !== 'MALE') return [{ code: 'GENDER_NOT_ELIGIBLE', message: 'This category is open to men players only' }];
+  return [];
+};
+
 /**
- * Check medalist eligibility (placeholder for future implementation)
- * For Phase 6, we assume no medal history, so player is not a medalist.
- * If category does not allow medalists, then player is eligible (since they are not a medalist).
- * If category allows medalists, then player is also eligible (since they are not a medalist).
- * So no reason to add.
- * However, if we had medal history and the player is a medalist and the category does not allow medalists, then ineligible.
- * Since we don't have medal history, we return empty.
- * We'll leave this as a placeholder for future.
+ * Check medalist eligibility based on actual medal history
+ * If category does not allow medalists, check if player has any WINNER/RUNNER_UP medal history
  */
 export const checkMedalistEligibility = (
-  _profile: PlayerProfile | GuestPlayer,
-  category: TournamentCategory
+  profile: PlayerProfile | GuestPlayer,
+  category: TournamentCategory,
+  medalHistory: MedalHistory[] = []
 ): EligibilityReason[] => {
   const reasons: EligibilityReason[] = [];
-  // In Phase 6, we have no medal history, so treat player as non-medalist.
-  // If category does not allow medalists, then non-medalist is allowed -> eligible.
-  // If category allows medalists, then non-medalist is also allowed -> eligible.
-  // So no reason to add.
-  // However, if we had medal history and the player is a medalist and the category does not allow medalists, then ineligible.
-  // Since we don't have medal history, we return empty.
+
+  // If category allows medalists, no restriction based on medal history
+  if (category.medalistsAllowed) {
+    return reasons;
+  }
+
+  // If category does not allow medalists, check if player has any medal history
+  // Check if player has any WINNER or RUNNER_UP medals
+  const hasMedalHistory = medalHistory.some(
+    medal =>
+      medal.position === 'WINNER' ||
+      medal.position === 'RUNNER_UP'
+  );
+
+  if (hasMedalHistory) {
+    reasons.push({
+      code: 'MEDALIST_NOT_ALLOWED',
+      message: 'Players with medal history are not allowed in this category'
+    });
+  }
+
   return reasons;
 };
 
@@ -158,13 +182,15 @@ export const checkBeginnerEligibility = (
  * @param tournament Tournament (must be published)
  * @param category Tournament category
  * @param currentRegistrations Current registrations for this tournament/category (to check duplicates and capacity)
+ * @param medalHistory Optional medal history for the player (to check medalist eligibility)
  * @returns EligibilityResult
  */
 export const evaluatePlayerEligibility = (
   profile: PlayerProfile | GuestPlayer | null,
   tournament: Tournament,
   category: TournamentCategory,
-  currentRegistrations: number = 0
+  currentRegistrations: number = 0,
+  medalHistory: MedalHistory[] = []
 ): EligibilityResult => {
   const reasons: EligibilityReason[] = [];
 
@@ -190,7 +216,16 @@ export const evaluatePlayerEligibility = (
     return { eligible: false, reasons };
   }
 
-  // 3. Check registration closing
+  // 3. Check manual registration close (category level)
+  if (category.registrationPhase === 'CLOSED') {
+    reasons.push({
+      code: 'REGISTRATION_CLOSED',
+      message: 'Registration is closed',
+    });
+    return { eligible: false, reasons };
+  }
+
+  // 4. Check registration closing (date/time based)
   if (!isRegistrationOpen(tournament)) {
     reasons.push({
       code: 'REGISTRATION_CLOSED',
@@ -202,9 +237,10 @@ export const evaluatePlayerEligibility = (
 
   // 4. Check age
   reasons.push(...checkAgeEligibility(profile, category));
+  reasons.push(...checkGenderEligibility(profile, category, tournament));
 
   // 5. Check medalist (placeholder)
-  reasons.push(...checkMedalistEligibility(profile, category));
+  reasons.push(...checkMedalistEligibility(profile, category, medalHistory));
 
   // 6. Check open player (placeholder)
   reasons.push(...checkOpenPlayerEligibility(profile, category));

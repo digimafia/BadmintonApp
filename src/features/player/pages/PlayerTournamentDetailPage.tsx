@@ -4,10 +4,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTournamentStore } from '@/features/tournaments/store/tournamentStore'
 import { usePlayerProfileStore } from '@/features/player/store/playerProfileStore'
 import { useRegistrationStore } from '@/features/registrations/store/registrationStore'
+import { useFixtureStore } from '@/features/fixtures/store/fixtureStore'
+import { useMedalHistoryStore } from '@/features/medals/store/medalHistoryStore'
 import { registrationService } from '@/features/registrations/services/registrationService'
 
 import { evaluatePlayerEligibility } from '@/features/eligibility/utils/eligibilityUtils'
 import { EligibilityResult } from '@/features/eligibility/types/eligibility.types'
+import { Fixture, FixtureMatch } from '@/features/fixtures/types/fixture.types'
+import { MedalHistory } from '@/features/medals/types/medalHistory.types'
 
 import {
   formatDateDisplay,
@@ -27,6 +31,14 @@ const PlayerTournamentDetailPage = () => {
 
   const { profile, hasProfile } = usePlayerProfileStore()
 
+  const medalHistoryStore = useMedalHistoryStore()
+
+  const [medalHistory, setMedalHistory] = useState<MedalHistory[]>([])
+  const [medalHistoryLoading, setMedalHistoryLoading] =
+    useState<boolean>(false)
+  const [medalHistoryError, setMedalHistoryError] =
+    useState<string | null>(null)
+
   const {
     registrations,
     getPlayerRegistrations,
@@ -44,11 +56,45 @@ const PlayerTournamentDetailPage = () => {
     Record<string, { success: boolean; message: string }>
   >({})
 
+  const [fixtures, setFixtures] = useState<Map<string, Fixture>>(new Map())
+  const [fixtureLoading, setFixtureLoading] = useState<boolean>(false)
+  const [fixtureError, setFixtureError] = useState<string | null>(null)
+
   useEffect(() => {
     if (tournamentId) {
       void fetchTournamentById(tournamentId)
     }
   }, [tournamentId, fetchTournamentById])
+
+  useEffect(() => {
+    if (!hasProfile || !profile) {
+      setMedalHistory([])
+      return
+    }
+
+    const loadMedalHistory = async () => {
+      setMedalHistoryLoading(true)
+      setMedalHistoryError(null)
+
+      try {
+        const playerMedals = medalHistoryStore.getPlayerMedalHistory(
+          profile.id
+        )
+
+        setMedalHistory(playerMedals)
+      } catch (err: unknown) {
+        setMedalHistoryError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to load medal history'
+        )
+      } finally {
+        setMedalHistoryLoading(false)
+      }
+    }
+
+    void loadMedalHistory()
+  }, [hasProfile, profile, medalHistoryStore])
 
   const playerRegistrations = useMemo(() => {
     if (!hasProfile || !profile || !tournamentId) {
@@ -102,7 +148,8 @@ const PlayerTournamentDetailPage = () => {
             profile,
             tournament,
             category,
-            currentRegistrations
+            currentRegistrations,
+            medalHistory
           )
 
           eligibilityMap.set(category.id, eligibilityResult)
@@ -130,7 +177,68 @@ const PlayerTournamentDetailPage = () => {
     tournamentId,
     registrations,
     getTournamentRegistrations,
+    medalHistory,
   ])
+
+  useEffect(() => {
+    if (
+      !tournamentId ||
+      !tournament ||
+      tournament.status !== 'PUBLISHED'
+    ) {
+      return
+    }
+
+    let isCancelled = false
+
+    const loadFixtures = async () => {
+      setFixtureLoading(true)
+      setFixtureError(null)
+
+      try {
+        const fixtureStore = useFixtureStore.getState()
+        const fixtureMap = new Map<string, Fixture>()
+
+        for (const category of tournament.categories ?? []) {
+          const fixture =
+            fixtureStore.getFixtureByTournamentCategory(
+              tournamentId,
+              category.id
+            )
+
+          if (fixture) {
+            fixtureMap.set(category.id, fixture)
+          }
+        }
+
+        if (!isCancelled) {
+          setFixtures(fixtureMap)
+        }
+      } catch (err: unknown) {
+        if (!isCancelled) {
+          setFixtureError(
+            err instanceof Error
+              ? err.message
+              : 'Failed to load fixtures'
+          )
+        }
+      } finally {
+        if (!isCancelled) {
+          setFixtureLoading(false)
+        }
+      }
+    }
+
+    void loadFixtures()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [tournamentId, tournament])
+
+  const canScoreMatchPlayer = (match: FixtureMatch): boolean => {
+    return match.status === 'LIVE' || match.status === 'COMPLETED'
+  }
 
   const handleRegister = async (categoryId: string) => {
     if (!hasProfile || !profile) {
@@ -141,6 +249,7 @@ const PlayerTournamentDetailPage = () => {
           message: 'Please complete your profile first',
         },
       }))
+
       return
     }
 
@@ -152,6 +261,7 @@ const PlayerTournamentDetailPage = () => {
           message: 'Tournament not found',
         },
       }))
+
       return
     }
 
@@ -167,6 +277,7 @@ const PlayerTournamentDetailPage = () => {
           message: 'Category not found',
         },
       }))
+
       return
     }
 
@@ -184,15 +295,17 @@ const PlayerTournamentDetailPage = () => {
           message: 'You are already registered for this category',
         },
       }))
+
       return
     }
 
     try {
-      const registration = await registrationService.registerPlayer(
-        tournamentId,
-        categoryId,
-        profile
-      )
+      const registration =
+        await registrationService.registerPlayer(
+          tournamentId,
+          categoryId,
+          profile
+        )
 
       setRegistrationStatus((previous) => ({
         ...previous,
@@ -257,15 +370,16 @@ const PlayerTournamentDetailPage = () => {
 
   if (!hasProfile || !profile) {
     return (
-      <div className="p-4">
+      <div className="player-tournament-page px-4 py-6 sm:px-6">
+        <div className="player-tournament-empty mx-auto max-w-2xl">
         <h1 className="text-2xl font-bold mb-4">
           {tournament.name}
         </h1>
 
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
           <p className="text-yellow-700">
-            Please complete your player profile to view eligibility and
-            register for tournaments.
+            Please complete your player profile to view eligibility
+            and register for tournaments.
           </p>
         </div>
 
@@ -278,20 +392,31 @@ const PlayerTournamentDetailPage = () => {
             Complete Profile
           </button>
         </div>
+        </div>
       </div>
     )
   }
 
+  const rules = Array.isArray(tournament.generalRules)
+    ? tournament.generalRules
+    : String(tournament.generalRules ?? '')
+        .split('\n')
+        .map((rule) => rule.trim())
+        .filter(Boolean)
+
   return (
-    <div className="p-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start mb-4">
+    <div className="player-tournament-page px-4 py-5 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-6xl">
+      <section className="player-tournament-hero mb-5">
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">
+          <p className="player-tournament-kicker">🏸 Tournament centre</p>
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
             {tournament.name}
           </h1>
 
-          <p className="text-sm text-gray-600">
-            {tournament.venueName} •{' '}
+          <p className="mt-2 text-sm text-blue-100 sm:text-base">
+            📍 {tournament.venueName} <span className="mx-1 opacity-60">•</span>{' '}
             {formatDateDisplay(tournament.tournamentDate)}
           </p>
         </div>
@@ -300,67 +425,48 @@ const PlayerTournamentDetailPage = () => {
           <button
             type="button"
             onClick={() => navigate('/player/registrations')}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            className="player-tournament-action"
           >
-            My Registrations
+            ✓ My Registrations
           </button>
         )}
-      </div>
+        </div>
+      </section>
 
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <h2 className="text-lg font-semibold mb-3">
-          Tournament Information
-        </h2>
+      <section className="player-tournament-info mb-6">
+        <div className="player-section-heading"><span>🎯</span><div><p>Match briefing</p><h2>Tournament information</h2></div></div>
+        <div className="player-info-grid">
 
-        <p className="mb-2">
-          <strong>Tournament Code:</strong>{' '}
-          {tournament.tournamentCode}
-        </p>
+        <p><strong>Entry code</strong><span>{tournament.tournamentCode}</span></p>
 
-        <p className="mb-2">
-          <strong>Date:</strong>{' '}
-          {formatDateDisplay(tournament.tournamentDate)}
-        </p>
+        <p><strong>Match date</strong><span>{formatDateDisplay(tournament.tournamentDate)}</span></p>
 
-        <p className="mb-2">
-          <strong>Reporting Time:</strong>{' '}
-          {formatTimeDisplay(tournament.reportingTime)}
-        </p>
+        <p><strong>Report by</strong><span>{formatTimeDisplay(tournament.reportingTime)}</span></p>
 
-        <p className="mb-2">
-          <strong>Registration Closes:</strong>{' '}
-          {formatDateDisplay(tournament.registrationCloseDate)} at{' '}
-          {formatTimeDisplay(tournament.registrationCloseTime)}
-        </p>
+        <p><strong>Registration closes</strong><span>
+          {formatDateDisplay(
+            tournament.registrationCloseDate
+          )}{' '}
+          at{' '}
+          {formatTimeDisplay(
+            tournament.registrationCloseTime
+          )}</span></p>
 
-        <p className="mb-2">
-          <strong>Venue:</strong> {tournament.venueName}
-        </p>
+        <p><strong>Venue</strong><span>{tournament.venueName}</span></p>
 
-        <p className="mb-2">
-          <strong>Venue Address:</strong>{' '}
-          {tournament.venueAddress}
-        </p>
+        <p><strong>Address</strong><span>{tournament.venueAddress}</span></p>
 
-        <p className="mb-2">
-          <strong>Format:</strong> {tournament.format}
-        </p>
+        <p><strong>Draw format</strong><span>{tournament.format}</span></p>
 
-        <p className="mb-2">
-          <strong>Status:</strong>{' '}
-          <span className="text-green-600 font-medium">
-            {tournament.status}
-          </span>
-        </p>
+        <p><strong>Entry status</strong><span className="player-published">● {tournament.status}</span></p>
 
         {tournament.mapLink && (
-          <p className="mb-2">
-            <strong>Map:</strong>{' '}
+          <p><strong>Venue map</strong>
             <a
               href={tournament.mapLink}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 underline"
+              className="player-map-link"
             >
               View Location
             </a>
@@ -368,59 +474,58 @@ const PlayerTournamentDetailPage = () => {
         )}
 
         {tournament.description && (
-          <p className="mb-2">
-            <strong>Description:</strong>{' '}
-            {tournament.description}
-          </p>
+          <p className="player-info-wide"><strong>About this tournament</strong><span>{tournament.description}</span></p>
         )}
 
         {tournament.prizes && (
-          <p className="mb-2">
-            <strong>Prize Details:</strong>{' '}
-            {tournament.prizes}
-          </p>
+          <p><strong>Prize pool</strong><span>{tournament.prizes}</span></p>
         )}
 
         {tournament.shuttle && (
-          <p className="mb-2">
-            <strong>Shuttle:</strong> {tournament.shuttle}
-          </p>
+          <p><strong>Shuttle</strong><span>{tournament.shuttle}</span></p>
         )}
 
         {tournament.scoringFormat && (
-          <p className="mb-2">
-            <strong>Scoring:</strong>{' '}
-            {tournament.scoringFormat}
-          </p>
+          <p><strong>Scoring</strong><span>{tournament.scoringFormat}</span></p>
         )}
-      </div>
+        </div>
+        </section>
 
-      {tournament.generalRules &&
-        tournament.generalRules.length > 0 && (
-          <div className="mb-6 p-4 border rounded-lg">
-            <h2 className="text-lg font-semibold mb-3">
-              General Rules
-            </h2>
+      {rules.length > 0 && (
+          <section className="player-rules-card mb-6">
+            <div className="player-section-heading"><span>📋</span><div><p>Know before you play</p><h2>Player notes</h2></div></div>
 
-            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-              {tournament.generalRules.map((rule, index) => (
-                <li key={`${rule}-${index}`}>
-                  {rule}
-                </li>
-              ))}
+            <ul>
+              {rules.map(
+                (rule, index) => (
+                  <li key={`${rule}-${index}`}>
+                    {rule}
+                  </li>
+                )
+              )}
             </ul>
-          </div>
+          </section>
         )}
+
+      {fixtureLoading && (
+        <div className="mb-4 text-sm text-gray-500">
+          Loading fixtures...
+        </div>
+      )}
+
+      {fixtureError && (
+        <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {fixtureError}
+        </div>
+      )}
 
       {tournament.categories &&
       tournament.categories.length > 0 ? (
         <>
-          <h2 className="text-xl font-semibold mb-4">
-            Event Categories
-          </h2>
+          <div className="player-section-title"><div><p>Choose your draw</p><h2>Event categories</h2></div><span>{tournament.categories.length} event{tournament.categories.length === 1 ? '' : 's'}</span></div>
 
-          <div className="space-y-4">
-            {tournament.categories.map((category) => {
+          <div className="grid gap-4 lg:grid-cols-2">
+            {tournament.categories.map((category, index) => {
               const eligibility =
                 eligibilityResults.get(category.id)
 
@@ -434,26 +539,27 @@ const PlayerTournamentDetailPage = () => {
               const regStatus =
                 registrationStatus[category.id]
 
+              const fixture = fixtures.get(category.id)
+
               return (
                 <div
-                  key={category.id}
-                  className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  key={`${category.id}-${index}`}
+                  className="player-category-card"
                 >
                   <div className="mb-3">
-                    <h3 className="text-lg font-semibold">
+                    <div className="flex items-start justify-between gap-3"><div><p className="player-category-label">🏸 {category.eventType}</p><h3 className="text-xl font-bold">
                       {category.name}
-                    </h3>
-
-                    <p className="text-sm text-gray-600">
-                      {category.eventType}
-                    </p>
+                    </h3></div><span className="player-category-count">{category.maxTeams ?? '∞'} slots</span></div>
 
                     {(category.minAge !== undefined ||
                       category.maxAge !== undefined) && (
                       <p className="text-sm text-gray-500">
                         Age:{' '}
-                        {category.minAge ?? 'No minimum'} -{' '}
-                        {category.maxAge ?? 'No maximum'}
+                        {category.minAge ??
+                          'No minimum'}{' '}
+                        -{' '}
+                        {category.maxAge ??
+                          'No maximum'}
                       </p>
                     )}
 
@@ -499,12 +605,170 @@ const PlayerTournamentDetailPage = () => {
                     )}
                   </div>
 
-                  <div className="mt-3 p-3 border-t border-gray-200">
+                  {fixture && (
+                    <div className="mt-4 p-3 bg-gray-50 rounded">
+                      <h4 className="text-lg font-semibold mb-2">
+                        {fixture.status === 'PUBLISHED'
+                          ? 'Match Results'
+                          : 'Fixture'}
+                      </h4>
+
+                      <div className="space-y-2">
+                        {fixture.matches.map((match) => (
+                          <div
+                            key={match.id}
+                            className="border p-3 rounded bg-white"
+                          >
+                            <div className="flex justify-between items-start">
+                              <span className="font-medium text-gray-700">
+                                Match:
+                              </span>
+
+                              <span className="text-sm">
+                                {match.matchCode}
+                              </span>
+                            </div>
+
+                            <div className="flex justify-between items-start mt-1">
+                              <span className="font-medium text-gray-700">
+                                Status:
+                              </span>
+
+                              <span
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  match.status === 'SCHEDULED'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : ''
+                                } ${
+                                  match.status === 'LIVE'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : ''
+                                } ${
+                                  match.status === 'COMPLETED'
+                                    ? 'bg-green-100 text-green-800'
+                                    : ''
+                                } ${
+                                  match.status === 'CANCELLED'
+                                    ? 'bg-gray-100 text-gray-800'
+                                    : ''
+                                }`}
+                              >
+                                {match.status}
+                              </span>
+                            </div>
+
+                            <div className="flex justify-between items-start mt-1 gap-3">
+                              <span className="font-medium text-gray-700">
+                                Participant 1:
+                              </span>
+
+                              <span className="text-sm flex-1 truncate text-right">
+                                {match.participant1 ? (
+                                  <>
+                                    {match.participant1.name}
+
+                                    {match.participant1.code && (
+                                      <span className="ml-1 text-xs text-gray-500">
+                                        (
+                                        {
+                                          match
+                                            .participant1
+                                            .code
+                                        }
+                                        )
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="italic text-gray-500">
+                                    BYE
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+
+                            {canScoreMatchPlayer(match) && (
+                              <div className="flex justify-between items-start mt-1">
+                                <span className="font-medium text-gray-700">
+                                  P1 Score:
+                                </span>
+
+                                <span className="text-sm font-mono">
+                                  {match.participant1Score}
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="flex justify-between items-start mt-1 gap-3">
+                              <span className="font-medium text-gray-700">
+                                Participant 2:
+                              </span>
+
+                              <span className="text-sm flex-1 truncate text-right">
+                                {match.participant2 ? (
+                                  <>
+                                    {match.participant2.name}
+
+                                    {match.participant2.code && (
+                                      <span className="ml-1 text-xs text-gray-500">
+                                        (
+                                        {
+                                          match
+                                            .participant2
+                                            .code
+                                        }
+                                        )
+                                      </span>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="italic text-gray-500">
+                                    BYE
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+
+                            {canScoreMatchPlayer(match) && (
+                              <div className="flex justify-between items-start mt-1">
+                                <span className="font-medium text-gray-700">
+                                  P2 Score:
+                                </span>
+
+                                <span className="text-sm font-mono">
+                                  {match.participant2Score}
+                                </span>
+                              </div>
+                            )}
+
+                            {match.winnerId && (
+                              <div className="flex justify-between items-start mt-2">
+                                <span className="font-medium text-gray-700">
+                                  Winner:
+                                </span>
+
+                                <span className="text-sm font-semibold text-green-600">
+                                  {match.participant1?.id ===
+                                  match.winnerId
+                                    ? match.participant1
+                                        ?.name
+                                    : match.participant2
+                                        ?.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="player-eligibility-panel">
                     {eligibility ? (
                       eligibility.eligible ? (
                         <>
-                          <p className="text-sm font-medium text-green-600 mb-2">
-                            Eligible
+                          <p className="player-eligible">
+                            ✓ You are eligible to play
                           </p>
 
                           {!regStatus && (
@@ -519,7 +783,7 @@ const PlayerTournamentDetailPage = () => {
                                         category.id
                                       )
                                     }
-                                    className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                                    className="player-register-button"
                                   >
                                     Register
                                   </button>
@@ -530,18 +794,33 @@ const PlayerTournamentDetailPage = () => {
                                 !isRegistered && (
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      navigate(`/player/tournaments/${tournamentId}/doubles/${category.id}/partner`);
+                                    onClick={(event) => {
+                                      event.preventDefault()
+                                      event.stopPropagation()
+
+                                      if (!tournamentId) {
+                                        return
+                                      }
+
+                                      // Validate that we have a valid category object with ID
+                                      if (!category || !category.id || String(category.id).trim() === '') {
+                                        return
+                                      }
+
+                                      const partnerPath =
+                                        `/player/tournaments/${tournamentId}/doubles/${category.id}/partner`
+
+                                      navigate(partnerPath)
                                     }}
-                                    className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                                    className="player-register-button w-full"
                                   >
-                                    Select Partner
+                                    Select Doubles Partner
                                   </button>
                                 )}
 
                               {isRegistered && (
-                                <p className="text-sm text-gray-500 mt-1">
-                                  Already Registered
+                                <p className="player-registered">
+                                  ✓ Already registered
                                 </p>
                               )}
                             </>
@@ -549,11 +828,11 @@ const PlayerTournamentDetailPage = () => {
                         </>
                       ) : (
                         <>
-                          <p className="text-sm font-medium text-red-600">
-                            Not Eligible
+                          <p className="player-ineligible">
+                            ✕ Not eligible for this event
                           </p>
 
-                          <ul className="list-disc list-inside mt-1 text-sm text-red-500 space-y-1">
+                          <ul className="mt-2 space-y-1 text-sm text-red-600">
                             {eligibility.reasons.map(
                               (reason, index) => (
                                 <li
@@ -598,6 +877,67 @@ const PlayerTournamentDetailPage = () => {
           No categories available for this tournament.
         </p>
       )}
+
+      <section className="mt-8">
+        <div className="player-section-title"><div><p>Your track record</p><h2>Achievements & medals</h2></div><span>🏆</span></div>
+
+        {medalHistoryLoading && (
+          <p className="text-sm text-gray-500">
+            Loading medal history...
+          </p>
+        )}
+
+        {medalHistoryError && (
+          <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {medalHistoryError}
+          </div>
+        )}
+
+        {!medalHistoryLoading &&
+          !medalHistoryError &&
+          medalHistory.length === 0 && (
+            <p className="player-empty-medals">
+              🏸 Your next podium finish will appear here.
+            </p>
+          )}
+
+        {!medalHistoryLoading &&
+          medalHistory.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {medalHistory.map((medal) => (
+                <div
+                  key={medal.id}
+                  className="player-medal-card"
+                >
+                  <h3 className="font-semibold">
+                    {medal.tournamentName}
+                  </h3>
+
+                  <p className="text-sm text-gray-600">
+                    {medal.categoryName}
+                  </p>
+
+                  <p className="mt-2 text-sm">
+                    <strong>Position:</strong>{' '}
+                    {medal.position}
+                  </p>
+
+                  <p className="text-sm">
+                    <strong>Medal:</strong>{' '}
+                    {medal.medalType}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    {new Date(
+                      medal.achievedAt
+                    ).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+      </section>
+      </main>
     </div>
   )
 }

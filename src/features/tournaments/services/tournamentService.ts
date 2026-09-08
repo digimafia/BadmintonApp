@@ -1,6 +1,7 @@
 import { Tournament, TournamentFormValues, TournamentStatus } from '@/features/tournaments/types/tournament.types';
 import { User, Role } from '@/types/auth.types';
 import { useTournamentStore } from '@/features/tournaments/store/tournamentStore';
+import { notificationService } from '@/features/notifications/services/notificationService';
 
 // Mock delay function to simulate API calls
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -61,7 +62,12 @@ export const tournamentService = {
   submitTournamentForApproval: async (id: string): Promise<Tournament> => {
     await delay(500);
     const state = useTournamentStore.getState();
-    return state.submitTournamentForApproval(id);
+    const result = state.submitTournamentForApproval(id);
+
+    // Notify that tournament was submitted for approval
+    await notificationService.notifyTournamentSubmitted(id);
+
+    return result;
   },
 
   /**
@@ -71,7 +77,12 @@ export const tournamentService = {
   approveTournament: async (id: string, adminId?: string): Promise<Tournament> => {
     await delay(500);
     const state = useTournamentStore.getState();
-    return state.approveTournament(id, adminId);
+    const result = state.approveTournament(id, adminId);
+
+    // Notify that tournament was approved/published
+    await notificationService.notifyTournamentPublished(id);
+
+    return result;
   },
 
   /**
@@ -81,7 +92,12 @@ export const tournamentService = {
   rejectTournament: async (id: string, rejectionReason: string, adminId?: string): Promise<Tournament> => {
     await delay(500);
     const state = useTournamentStore.getState();
-    return state.rejectTournament(id, rejectionReason, adminId);
+    const result = state.rejectTournament(id, rejectionReason, adminId);
+
+    // Notify that tournament was rejected
+    await notificationService.notifyTournamentRejected(id, rejectionReason);
+
+    return result;
   },
 
   /**
@@ -91,7 +107,12 @@ export const tournamentService = {
   publishTournament: async (id: string): Promise<Tournament> => {
     await delay(500);
     const state = useTournamentStore.getState();
-    return state.publishTournament(id);
+    const result = state.publishTournament(id);
+
+    // Notify that tournament was published
+    await notificationService.notifyTournamentPublished(id);
+
+    return result;
   },
 
   /**

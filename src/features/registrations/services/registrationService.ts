@@ -10,6 +10,7 @@ import { teamService } from '@/features/teams/services/teamService';
 import { guestPlayerService } from '@/features/player/services/guestPlayerService';
 
 import { useTeamStore } from '@/features/teams/store/teamStore';
+import { notificationService } from '@/features/notifications/services/notificationService';
 // Mock delay function to simulate API calls
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -42,6 +43,11 @@ export const registrationService = {
     const category = tournament.categories.find(c => c.id === categoryId);
     if (!category) {
       throw new Error('Category not found');
+    }
+
+    // Check if registration is closed for this category
+    if (category.registrationPhase === 'CLOSED') {
+      throw new Error('Registration is closed for this category');
     }
 
     // Get current registrations for this tournament/category to check capacity and duplicates
@@ -86,6 +92,13 @@ export const registrationService = {
     // Create registration in store (this will generate id and registrationCode)
     const registration = storeState.createRegistration(registrationData);
 
+    // Notify that registration was confirmed
+    await notificationService.notifyRegistrationConfirmed(
+      playerProfile.userId, // Use auth user ID
+      tournamentId,
+      categoryId
+    );
+
     return registration;
   },
 
@@ -127,6 +140,11 @@ export const registrationService = {
     const category = tournament.categories.find(c => c.id === categoryId);
     if (!category) {
       throw new Error('Category not found');
+    }
+
+    // Check if registration is closed for this category
+    if (category.registrationPhase === 'CLOSED') {
+      throw new Error('Registration is closed for this category');
     }
 
     // Validate that the category is DOUBLES
@@ -198,24 +216,31 @@ export const registrationService = {
     const isGuest = 'guestCode' in partner;
 
     // Prepare team data for creation (pending partner)
-    // partnerStatus: 'ACCEPTED' (since only accepted partners proceed)
-    // status: 'PENDING_PARTNER' (will be confirmed after team confirmation)
-    const teamData: Omit<Team, 'id' | 'teamCode' | 'createdAt' | 'confirmedAt' | 'cancelledAt'> = {
-      tournamentId,
-      tournamentCode: tournament.tournamentCode,
-      categoryId,
-      categoryName: category.name,
-      player1Id: playerProfile.id,
-      player1Code: playerProfile.playerCode,
-      player1Name: playerProfile.fullName,
-      player1Type: 'FULL',
-      player2Id: partner.id,
-      player2Code: isGuest ? partner.guestCode : partner.playerCode,
-      player2Name: partner.fullName,
-      player2Type: isGuest ? 'GUEST' : 'FULL',
-      partnerStatus: 'ACCEPTED',
-      status: 'PENDING_PARTNER',
-    };
+// Note: The team store will override partnerStatus based on player2Type:
+//   - For guest: partnerStatus will be set to 'ACCEPTED'
+//   - For existing player: partnerStatus will be set to 'PENDING_CONFIRMATION'
+// Status is always set to 'PENDING_PARTNER' by the store.
+// We use placeholders that will be overridden, but must be valid types.
+const teamData: Omit<Team, 'id' | 'teamCode' | 'createdAt' | 'confirmedAt' | 'cancelledAt'> = {
+  tournamentId,
+  tournamentCode: tournament.tournamentCode,
+  categoryId,
+  categoryName: category.name,
+  player1Id: playerProfile.id,
+  player1Code: playerProfile.playerCode,
+  player1Name: playerProfile.fullName,
+  player1Type: 'FULL',
+  player2Id: partner.id,
+  player2Code: isGuest ? partner.guestCode : partner.playerCode,
+  player2Name: partner.fullName,
+  player2Type: isGuest ? 'GUEST' : 'FULL',
+  // partnerStatus: placeholder (will be overridden by store)
+  //   For guest: store sets to 'ACCEPTED'
+  //   For existing: store sets to 'PENDING_CONFIRMATION'
+  partnerStatus: 'PENDING_CONFIRMATION',
+  // status: placeholder (will be overridden by store to 'PENDING_PARTNER')
+  status: 'PENDING_PARTNER',
+};
 
     // Create team
     let team: Team | undefined;
@@ -223,6 +248,25 @@ export const registrationService = {
       team = await teamService.createTeam(teamData);
     } catch (err) {
       throw new Error('Failed to create team');
+    }
+
+    // For guest partners, partnerStatus is already ACCEPTED (set by store)
+    // For existing partners, we need to accept the partner first
+    if (!isGuest) {
+      // Accept the partner (changes partnerStatus from PENDING_CONFIRMATION to ACCEPTED)
+      let acceptedTeam: Team | undefined;
+      try {
+        acceptedTeam = await teamService.acceptPartner(team.id);
+        if (!acceptedTeam) {
+          // This should not happen if we just created the team with PENDING_CONFIRMATION
+          await teamService.cancelTeam(team.id).catch(() => {});
+          throw new Error('Failed to accept partner');
+        }
+        team = acceptedTeam;
+      } catch (err) {
+        await teamService.cancelTeam(team.id).catch(() => {});
+        throw new Error('Failed to accept partner');
+      }
     }
 
     // Confirm team (sets status to CONFIRMED and confirmedAt)
@@ -277,6 +321,14 @@ export const registrationService = {
       }
       throw new Error('Failed to create registration');
     }
+
+    // Notify that registration was confirmed
+    // For doubles, we notify using the primary player's info
+    await notificationService.notifyRegistrationConfirmed(
+      playerProfile.userId, // Use auth user ID of the primary player
+      tournamentId,
+      categoryId
+    );
 
     return registration;
   },

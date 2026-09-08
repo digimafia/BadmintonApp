@@ -11,11 +11,15 @@ export type TournamentStatus =
 export type TournamentFormat = 'KNOCKOUT' | 'LEAGUE' | 'LEAGUE_KNOCKOUT';
 
 export type EventType = 'SINGLES' | 'DOUBLES';
+export type GenderEligibility = 'OPEN' | 'WOMEN_ONLY' | 'MEN_ONLY';
+
+export type RegistrationPhase = 'OPEN' | 'CLOSED';
 
 export interface TournamentCategory {
   id: string;
   name: string;
   eventType: EventType;
+  genderEligibility?: GenderEligibility;
   minAge?: number;
   maxAge?: number;
   maxTeams?: number;
@@ -24,12 +28,15 @@ export interface TournamentCategory {
   beginnerOnly: boolean;
   pureBeginnerOnly: boolean;
   additionalRuleNotes?: string;
+  registrationPhase?: RegistrationPhase;
+  registrationClosedAt?: string | null;
 }
 
 export interface Tournament {
   id: string;
   tournamentCode: string;
   organizerId: string;
+  organizerMobile: string;
   organizerName: string;
   name: string;
   description: string;

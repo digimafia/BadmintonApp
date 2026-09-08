@@ -23,7 +23,7 @@ export const getPlayerProfile = async (): Promise<PlayerProfile | null> => {
 export const createPlayerProfile = async (formValues: PlayerProfileFormValues, userId: string, mobile: string): Promise<PlayerProfile> => {
   await delay(800)
 
-  const { fullName, dob, location, playingSince, regularPlayer, courtAcademy } = formValues
+  const { fullName, gender, dob, location, playingSince, regularPlayer, courtAcademy } = formValues
 
   // Calculate derived values
   const age = calculateAge(dob)
@@ -35,6 +35,7 @@ export const createPlayerProfile = async (formValues: PlayerProfileFormValues, u
     playerCode,
     userId,
     fullName,
+    gender,
     dob,
     age,
     mobile, // from auth state
@@ -72,7 +73,7 @@ export const createPlayerProfile = async (formValues: PlayerProfileFormValues, u
 export const updatePlayerProfile = async (formValues: PlayerProfileFormValues, existingProfile: PlayerProfile): Promise<PlayerProfile> => {
   await delay(800)
 
-  const { fullName, dob, location, playingSince, regularPlayer, courtAcademy } = formValues
+  const { fullName, gender, dob, location, playingSince, regularPlayer, courtAcademy } = formValues
 
   // Calculate derived values
   const age = calculateAge(dob)
@@ -82,6 +83,7 @@ export const updatePlayerProfile = async (formValues: PlayerProfileFormValues, e
   const updatedProfile: PlayerProfile = {
     ...existingProfile, // copy all existing fields
     fullName,
+    gender,
     dob,
     age,
     location,

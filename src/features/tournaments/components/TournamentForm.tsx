@@ -52,6 +52,7 @@ const TournamentForm = ({
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitForApprovalError, setSubmitForApprovalError] = useState<string | null>(null);
+  const [customRules, setCustomRules] = useState<{ id: number; text: string; enabled: boolean }[]>([]);
 
   const {
     register,
@@ -147,6 +148,12 @@ const TournamentForm = ({
 
   // Watch for category changes to validate (optional, for live validation if desired)
   const categories = watch('categories');
+
+  const updateCustomRule = (id: number, changes: Partial<{ text: string; enabled: boolean }>) => {
+    const updatedRules = customRules.map(rule => rule.id === id ? { ...rule, ...changes } : rule);
+    setCustomRules(updatedRules);
+    setValue('categories.0.additionalRuleNotes', updatedRules.filter(rule => rule.enabled && rule.text.trim()).map(rule => rule.text.trim()).join('\n'));
+  };
 
   useEffect(() => {
     if (categories.length > 0) {
@@ -245,15 +252,19 @@ const TournamentForm = ({
     setSubmitForApprovalError(null);
     try {
       setLoading(true);
+      const normalizedData = {
+        ...data,
+        generalRules: (Array.isArray(data.generalRules) ? data.generalRules : String(data.generalRules ?? '').split('\n')).map(rule => String(rule).trim()).filter(Boolean),
+      } as TournamentFormValues;
 
       let result;
       if (isEditMode && tournamentId) {
-        result = await tournamentService.updateTournament(tournamentId, data);
+        result = await tournamentService.updateTournament(tournamentId, normalizedData);
       } else {
         if (!user) {
           throw new Error('User not authenticated');
         }
-        result = await tournamentService.createTournament(data, user);
+        result = await tournamentService.createTournament(normalizedData, user);
       }
 
       if (onSubmitSuccess) {
@@ -341,11 +352,16 @@ const TournamentForm = ({
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">{isEditMode ? 'Edit Tournament' : 'Create Tournament'}</h2>
+    <div className="tournament-form space-y-6">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-900 px-6 py-8 text-white shadow-xl sm:px-9 sm:py-10">
+        <div className="absolute -right-10 -top-12 h-48 w-48 rounded-full border-[18px] border-emerald-300/15" />
+        <div className="relative"><p className="text-xs font-bold uppercase tracking-[.22em] text-emerald-300">Organizer workspace</p><h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{isEditMode ? 'Fine-tune your tournament' : 'Build your next badminton event'}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Set the court, schedule, categories, and rules. Save your draft anytime before sending it for approval.</p></div>
+        <div className="relative mt-6 flex flex-wrap gap-2 text-xs font-semibold"><span className="rounded-full bg-white/10 px-3 py-1.5">1 · Event details</span><span className="rounded-full bg-white/10 px-3 py-1.5">2 · Categories</span><span className="rounded-full bg-white/10 px-3 py-1.5">3 · Rules & submit</span></div>
+      </section>
       <form onSubmit={handleSubmit(onSaveDraft)} className="space-y-6">
         {/* Tournament Basic Info */}
-        <div className="space-y-4">
+        <section className="form-panel space-y-4">
+          <div className="form-panel-heading"><span>01</span><div><h3>Event details</h3><p>Give players the information they need before joining.</p></div></div>
           <div>
             <label className="block text-sm font-medium mb-2">Tournament Name</label>
             <input
@@ -366,27 +382,26 @@ const TournamentForm = ({
               placeholder="Enter tournament description"
             />
           </div>
-        </div>
+        </section>
 
         {/* Dates and Times */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="form-panel"><div className="form-panel-heading"><span>02</span><div><h3>Schedule</h3><p>Choose the tournament day and registration cutoff.</p></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Tournament Date</label>
             <input
               {...register('tournamentDate')}
               type="date"
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="tournament-date-picker w-full px-4 py-3 border rounded-xl"
             />
             {errors.tournamentDate && <p className="text-sm text-red-600">{errors.tournamentDate.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Reporting Time (HH:mm)</label>
+            <label className="block text-sm font-medium mb-2">Reporting Time</label>
             <input
               {...register('reportingTime')}
-              type="text"
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="HH:mm (24-hour format)"
+              type="time"
+              className="tournament-date-picker w-full px-4 py-3 border rounded-xl"
             />
             {errors.reportingTime && <p className="text-sm text-red-600">{errors.reportingTime.message}</p>}
           </div>
@@ -396,25 +411,24 @@ const TournamentForm = ({
             <input
               {...register('registrationCloseDate')}
               type="date"
-              className="w-full px_4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="tournament-date-picker w-full px-4 py-3 border rounded-xl"
             />
             {errors.registrationCloseDate && <p className="text-sm text-red-600">{errors.registrationCloseDate.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Registration Close Time (HH:mm)</label>
+            <label className="block text-sm font-medium mb-2">Registration Close Time</label>
             <input
               {...register('registrationCloseTime')}
-              type="text"
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="HH:mm (24-hour format)"
+              type="time"
+              className="tournament-date-picker w-full px-4 py-3 border rounded-xl"
             />
             {errors.registrationCloseTime && <p className="text-sm text-red-600">{errors.registrationCloseTime.message}</p>}
           </div>
-        </div>
+        </div></section>
 
         {/* Venue Info */}
-        <div className="space-y-4">
+        <section className="form-panel space-y-4"><div className="form-panel-heading"><span>03</span><div><h3>Court & format</h3><p>Tell players where and how the event will run.</p></div></div>
           <div>
             <label className="block text-sm font-medium mb-2">Venue Name</label>
             <input
@@ -446,12 +460,13 @@ const TournamentForm = ({
               placeholder="Enter Google Maps link or other URL"
             />
           </div>
-        </div>
+        </section>
 
         {/* Tournament Format */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium mb-2">Format</label>
+        <section className="form-panel space-y-4">
+          <div className="form-panel-heading"><span>04</span><div><h3>Match format</h3><p>Choose the draw format and event type.</p></div></div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div><label className="mb-2 block text-sm font-medium">Format</label>
             <select
               {...register('format')}
               className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -460,58 +475,19 @@ const TournamentForm = ({
               <option value="LEAGUE">League</option>
               <option value="LEAGUE_KNOCKOUT">League + Knockout</option>
             </select>
+            </div>
+            <div><label className="mb-2 block text-sm font-medium">Event Type</label><select {...register('categories.0.eventType')} className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="SINGLES">Singles</option><option value="DOUBLES">Doubles</option></select></div>
+            <div><label className="mb-2 block text-sm font-medium">Player eligibility</label><select {...register('categories.0.genderEligibility')} className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"><option value="OPEN">Open to all</option><option value="WOMEN_ONLY">Women only</option><option value="MEN_ONLY">Men only</option></select></div>
           </div>
-        </div>
+        </section>
 
         {/* Categories */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold mb-2">Categories</h3>
+        <section className="form-panel space-y-4">
+          <div className="form-panel-heading"><span>05</span><div><h3>Eligibility rules</h3><p>Choose which players can join this event.</p></div></div>
           <div id="categories-container" className="space-y-3">
             {categories.map((category, index) => (
               <div key={index} className="border rounded p-4 bg-gray-50">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-medium">Category {index + 1}</h4>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newCategories = [...categories];
-                      newCategories.splice(index, 1);
-                      setValue('categories', newCategories);
-                    }}
-                    className="text-sm text-red-600 hover:text-red-800"
-                    disabled={categories.length <= 1}
-                  >
-                    Remove
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Category Name</label>
-                    <input
-                      {...register(`categories.${index}.name`)}
-                      type="text"
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    {errors[`categories[${index}].name`] && (
-                      <p className="text-sm text-red-600">{errors[`categories[${index}].name`].message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Event Type</label>
-                    <select
-                      {...register(`categories.${index}.eventType`)}
-                      className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="SINGLES">Singles</option>
-                      <option value="DOUBLES">Doubles</option>
-                    </select>
-                    {errors[`categories[${index}].eventType`] && (
-                      <p className="text-sm text-red-600">{errors[`categories[${index}].eventType`].message}</p>
-                    )}
-                  </div>
-                </div>
+                <input type="hidden" {...register(`categories.${index}.name`)} value={category.eventType === 'DOUBLES' ? 'Doubles' : 'Singles'} />
 
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
@@ -551,58 +527,25 @@ const TournamentForm = ({
                   </div>
                 </div>
 
-                <div className="mt-3">
-                  <label className="block text-sm font-medium mb-1">Additional Rule Notes (Optional)</label>
-                  <textarea
-                    {...register(`categories.${index}.additionalRuleNotes`)}
-                    rows={2}
-                    className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+                {index === 0 && customRules.length > 0 && <div className="mt-5 space-y-2 border-t border-slate-200 pt-4"><p className="text-sm font-bold text-slate-700">Custom rules</p>{customRules.map(rule => <div key={rule.id} className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center"><label className="flex shrink-0 items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={rule.enabled} onChange={event => updateCustomRule(rule.id, { enabled: event.target.checked })} />Apply rule</label><input value={rule.text} onChange={event => updateCustomRule(rule.id, { text: event.target.value })} placeholder="Example: Players must report 30 minutes early" className="w-full px-3 py-2 border rounded-lg" /><button type="button" onClick={() => { const updatedRules = customRules.filter(item => item.id !== rule.id); setCustomRules(updatedRules); setValue('categories.0.additionalRuleNotes', updatedRules.filter(item => item.enabled && item.text.trim()).map(item => item.text.trim()).join('\n')); }} className="text-sm font-semibold text-red-600 hover:text-red-800">Remove</button></div>)}</div>}
               </div>
             ))}
 
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  setValue('categories', [
-                    ...categories,
-                    {
-                      id: '',
-                      name: '',
-                      eventType: 'SINGLES' as EventType,
-                      medalistsAllowed: false,
-                      openPlayersAllowed: false,
-                      beginnerOnly: false,
-                      pureBeginnerOnly: false,
-                    }
-                  ]);
-                }}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => setCustomRules(rules => [...rules, { id: Date.now(), text: '', enabled: true }])}
+                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"
               >
-                Add Category
+                + Add custom rule
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* General Rules */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">General Rules (One per line)</label>
-            <textarea
-              {...register('generalRules')}
-              rows={4}
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter each rule on a new line"
-            />
-          </div>
-          <p className="text-sm text-gray-500">
-            Each line will be treated as a separate rule
-          </p>
-        </div>
-
+        {/* Notes, prizes, and scoring */}
+        <section className="form-panel space-y-4">
+          <div className="form-panel-heading"><span>06</span><div><h3>Event notes & scoring</h3><p>Add prizes, shuttle details, scoring, and any notes for players.</p></div></div>
         {/* Prizes and Shuttle Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -637,8 +580,20 @@ const TournamentForm = ({
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-2">Notes (Optional)</label>
+          <textarea
+            {...register('generalRules')}
+            rows={4}
+            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Add any instructions or notes for players"
+          />
+          <p className="mt-2 text-sm text-gray-500">Write each note on a new line.</p>
+        </div>
+
         {/* Submit Buttons */}
-        <div className="flex justify-end space-x-3">
+        </section>
+        <div className="sticky bottom-4 flex flex-wrap justify-end gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl backdrop-blur">
           <button
             type="submit"
             disabled={isSubmitting || loading}

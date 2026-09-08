@@ -90,12 +90,30 @@ export const formatDateDisplay = (dateString: string): string => {
  * Format time string to display format (e.g., "2:30 PM")
  */
 export const formatTimeDisplay = (timeString: string): string => {
-  const [hours, minutes] = timeString.split(':');
-  const hoursNum = parseInt(hours, 10);
-  const minutesNum = parseInt(minutes, 10);
+  const normalized = normalizeTimeValue(timeString);
+  if (!normalized) return 'Time not set';
+  const [hours, minutes] = normalized.split(':');
+  const hoursNum = Number(hours);
+  const minutesNum = Number(minutes);
   const period = hoursNum >= 12 ? 'PM' : 'AM';
   const displayHours = hoursNum % 12 || 12;
   return `${displayHours}:${String(minutesNum).padStart(2, '0')} ${period}`;
+};
+
+/** Converts legacy values such as "7" to "07:00" and rejects invalid times. */
+export const normalizeTimeValue = (timeString: string | null | undefined): string | null => {
+  if (!timeString) return null;
+  const value = timeString.trim();
+  if (/^\d{1,2}$/.test(value)) {
+    const hours = Number(value);
+    return hours >= 0 && hours <= 23 ? `${String(hours).padStart(2, '0')}:00` : null;
+  }
+  const match = value.match(/^(\d{1,2}):(\d{1,2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 
 /**
