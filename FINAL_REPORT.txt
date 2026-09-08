@@ -1,0 +1,14 @@
+1. PartnerStatus final values: 'PENDING_CONFIRMATION' | 'ACCEPTED'
+2. TeamStatus final values: 'PENDING_PARTNER' | 'CONFIRMED' | 'CANCELLED'
+3. Final registration Team state transition:
+   - Before final registration: Team conceptually pending (PENDING_PARTNER) with partnerStatus set appropriately (ACCEPTED for guest, PENDING_CONFIRMATION for full player pending acceptance).
+   - On user click "Confirm Team & Register" after validation:
+        A. Create Team with partnerStatus = 'ACCEPTED' (only accepted partners proceed) and status = 'PENDING_PARTNER'.
+        B. Call team confirmation operation (confirmTeam) which requires partnerStatus === 'ACCEPTED' and changes Team status to 'CONFIRMED', setting confirmedAt.
+        C. Only after confirmed Team succeeds, create the Registration.
+4. Rollback behavior:
+   - If Team creation succeeds but Team confirmation fails: cancel/remove the newly-created Team via cancelTeam.
+   - If Registration creation fails after Team confirmation: cancel the Team (which sets status to CANCELLED but leaves partnerStatus unchanged) to avoid a ghost confirmed Team.
+5. npm run build: PASS
+6. TypeScript/JSX errors: 0
+7. Phase 8 started: NO

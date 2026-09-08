@@ -13,8 +13,8 @@ export const mockLogin = async (mobile: string, role: Role): Promise<User> => {
     throw new Error('Invalid mobile number')
   }
 
-  // Generate a mock ID
-  const id = `${role.toLowerCase()}-${Date.now()}`
+  // Generate a mock ID - deterministic based on role and mobile
+  const id = `${role.toLowerCase()}-${mobile}`
 
   // Mock user
   const user: User = {

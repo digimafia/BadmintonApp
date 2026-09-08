@@ -1,0 +1,786 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+
+import { useTournamentStore } from '@/features/tournaments/store/tournamentStore'
+import { useFixtureStore } from '@/features/fixtures/store/fixtureStore'
+import { useTeamStore } from '@/features/teams/store/teamStore'
+import { useRegistrationStore } from '@/features/registrations/store/registrationStore'
+import { useAuthStore } from '@/store/authStore'
+
+import { TournamentCategory } from '@/features/tournaments/types/tournament.types'
+import { Fixture, FixtureMatch } from '@/features/fixtures/types/fixture.types'
+import { Team } from '@/features/teams/types/team.types'
+import { Registration } from '@/features/registrations/types/registration.types'
+
+import { fixtureService } from '@/features/fixtures/services/fixtureService'
+import { matchService } from '@/features/matches/services/matchService'
+import { formatDateDisplay } from '@/features/tournaments/utils/tournamentHelpers'
+
+const CategoryFixturePage = () => {
+  const { tournamentId, categoryId } = useParams<{ tournamentId: string; categoryId: string }>()
+  const navigate = useNavigate()
+  const authStore = useAuthStore()
+  const currentUser = authStore.user
+
+  const {
+    tournament,
+    loading: tournamentLoading,
+    error: tournamentError,
+  } = useTournamentStore()
+
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [category, setCategory] = useState<TournamentCategory | null>(null)
+  const [fixture, setFixture] = useState<Fixture | null>(null)
+  const [isGenerating, setIsGenerating] = useState<boolean>(false)
+  const [isPublishing, setIsPublishing] = useState<boolean>(false)
+  const [isReshuffling, setIsReshuffling] = useState<boolean>(false)
+  // Scoring state
+  const [isStartingMatch, setIsStartingMatch] = useState<string | false>(false) // matchId or false
+  const [isScoring, setIsScoring] = useState<{ matchId: string; side: 'PARTICIPANT_1' | 'PARTICIPANT_2' } | null>(null)
+  const [isUndoingScore, setIsUndoingScore] = useState<string | false>(false) // matchId or false
+  const [isCompletingMatch, setIsCompletingMatch] = useState<string | false>(false) // matchId or false
+
+  useEffect(() => {
+    // Fetch tournament and category if not already loaded
+    if (tournamentId && categoryId) {
+      const fetchData = async () => {
+        const tournamentStore = useTournamentStore.getState()
+        if (!tournamentStore.tournament || tournamentStore.tournament.id !== tournamentId) {
+          await tournamentStore.fetchTournamentById(tournamentId)
+        }
+
+        const updatedTournament = useTournamentStore.getState().tournament
+        if (updatedTournament) {
+          const cat = updatedTournament.categories.find(c => c.id === categoryId)
+          if (cat) {
+            setCategory(cat)
+          }
+        }
+
+        // Load fixture for this tournament and category
+        const fixtureStore = useFixtureStore.getState()
+        const existingFixture = fixtureStore.getFixtureByTournamentCategory(tournamentId, categoryId)
+        if (existingFixture) {
+          setFixture(existingFixture)
+        }
+      }
+      fetchData()
+    }
+  }, [tournamentId, categoryId])
+
+  if (tournamentLoading || !tournament) {
+    return (
+      <div className="text-center py-8">
+        Loading tournament details...
+      </div>
+    )
+  }
+
+  if (tournamentError) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        Error loading tournament: {tournamentError}
+      </div>
+    )
+  }
+
+  if (!category) {
+    return (
+      <div className="p-4">
+        <div className="text-center py-8">
+          Loading category details...
+        </div>
+      </div>
+    )
+  }
+
+  // Check if current user is the organizer
+  const isOrganizer = currentUser?.id === tournament.organizerId && currentUser?.role === 'ORGANIZER'
+  const finalMatch = fixture?.matches
+    .filter(match => match.roundNumber === Math.max(...(fixture?.matches.map(item => item.roundNumber) ?? [0])))
+    .find(match => match.status === 'COMPLETED' && match.winnerId)
+  const champion = finalMatch ? (finalMatch.participant1?.id === finalMatch.winnerId ? finalMatch.participant1 : finalMatch.participant2) : undefined
+  const runnerUp = finalMatch ? (finalMatch.participant1?.id === finalMatch.winnerId ? finalMatch.participant2 : finalMatch.participant1) : undefined
+
+  const handleGenerateFixture = async () => {
+    if (!tournament || !currentUser) return
+    setIsGenerating(true)
+    setError(null)
+    try {
+      const newFixture = await fixtureService.generateFixture(
+        currentUser.id,
+        tournamentId,
+        categoryId,
+        tournament.format
+      )
+      const savedFixture = useFixtureStore.getState().saveGeneratedFixture(newFixture)
+      setFixture(savedFixture)
+      setSuccess('Fixture generated successfully. Review the draw, then publish it for players.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleReshuffleFixture = async () => {
+    if (!fixture || !currentUser) return
+    setIsReshuffling(true)
+    setError(null)
+    try {
+      const updatedFixture = await fixtureService.reshuffleFixture(
+        currentUser.id,
+        fixture.id
+      )
+      setFixture(updatedFixture)
+      setError('Fixture reshuffled successfully')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsReshuffling(false)
+    }
+  }
+
+  const handlePublishFixture = async () => {
+    if (!fixture || !currentUser) return
+    setIsPublishing(true)
+    setError(null)
+    try {
+      const updatedFixture = await fixtureService.publishFixture(
+        currentUser.id,
+        fixture.id
+      )
+      setFixture(updatedFixture)
+      setError('Fixture published successfully')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
+  const handleStartMatch = async (matchId: string) => {
+    if (!tournament || !currentUser) return
+    setIsStartingMatch(matchId)
+    setError(null)
+    try {
+      const updatedMatch = await matchService.startMatch(
+        currentUser.id,
+        tournamentId,
+        categoryId,
+        matchId
+      )
+      // Update fixture with the started match
+      const fixtureStore = useFixtureStore.getState()
+      const currentFixture = fixtureStore.getFixtureByTournamentCategory(tournamentId, categoryId)
+      if (currentFixture) {
+        setFixture(currentFixture)
+      }
+      setError('Match started successfully')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsStartingMatch(false)
+    }
+  }
+
+  const handleSetWinningPoints = (matchId: string, points: 15 | 21 | 30) => {
+    if (!fixture) return
+    const updatedMatch = useFixtureStore.getState().setMatchWinningPoints(fixture.id, matchId, points)
+    if (!updatedMatch) return
+    const updatedFixture = useFixtureStore.getState().getFixtureByTournamentCategory(tournamentId, categoryId)
+    if (updatedFixture) setFixture(updatedFixture)
+  }
+
+  const handleUpdateScore = async (
+    matchId: string,
+    side: 'PARTICIPANT_1' | 'PARTICIPANT_2',
+    delta: 1 | -1
+  ) => {
+    if (!tournament || !currentUser) return
+    setIsScoring({ matchId, side })
+    setError(null)
+    try {
+      const updatedMatch = await matchService.updateScore(
+        currentUser.id,
+        tournamentId,
+        categoryId,
+        matchId,
+        side,
+        delta
+      )
+      // Update fixture with the updated match
+      const fixtureStore = useFixtureStore.getState()
+      const currentFixture = fixtureStore.getFixtureByTournamentCategory(tournamentId, categoryId)
+      if (currentFixture) {
+        setFixture(currentFixture)
+      }
+      // Clear scoring state after successful update
+      setIsScoring(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsScoring(null)
+    }
+  }
+
+  const handleUndoScore = async (matchId: string) => {
+    if (!tournament || !currentUser) return
+    setIsUndoingScore(matchId)
+    setError(null)
+    try {
+      const updatedMatch = await matchService.undoScore(
+        currentUser.id,
+        tournamentId,
+        categoryId,
+        matchId
+      )
+      // Update fixture with the updated match
+      const fixtureStore = useFixtureStore.getState()
+      const currentFixture = fixtureStore.getFixtureByTournamentCategory(tournamentId, categoryId)
+      if (currentFixture) {
+        setFixture(currentFixture)
+      }
+      setError('Score undone successfully')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsUndoingScore(false)
+    }
+  }
+
+  const handleCompleteMatch = async (matchId: string) => {
+    if (!tournament || !currentUser) return
+    setIsCompletingMatch(matchId)
+    setError(null)
+    try {
+      const updatedMatch = await matchService.completeMatch(
+        currentUser.id,
+        tournamentId,
+        categoryId,
+        matchId
+      )
+      // Update fixture with the completed match
+      const fixtureStore = useFixtureStore.getState()
+      const currentFixture = fixtureStore.getFixtureByTournamentCategory(tournamentId, categoryId)
+      if (currentFixture) {
+        setFixture(currentFixture)
+      }
+      setError('Match completed successfully')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsCompletingMatch(false)
+    }
+  }
+
+  // Helper function to check if match can be started
+  const canStartMatch = (match: FixtureMatch): boolean => {
+    return (
+      fixture?.status === 'PUBLISHED' &&
+      match.status === 'SCHEDULED' &&
+      match.participant1 !== null &&
+      match.participant2 !== null &&
+      isOrganizer
+    )
+  }
+
+  // Helper function to check if match can be scored
+  const canScoreMatch = (match: FixtureMatch): boolean => {
+    return (
+      fixture?.status === 'PUBLISHED' &&
+      match.status === 'LIVE' &&
+      isOrganizer
+    )
+  }
+
+  // Helper function to check if score can be undone
+  const canUndoScore = (match: FixtureMatch): boolean => {
+    return (
+      fixture?.status === 'PUBLISHED' &&
+      match.status === 'LIVE' &&
+      match.scoreHistory &&
+      match.scoreHistory.length > 0 &&
+      isOrganizer
+    )
+  }
+
+  // Helper function to check if match can be completed
+  const canCompleteMatch = (match: FixtureMatch): boolean => {
+    return (
+      fixture?.status === 'PUBLISHED' &&
+      match.status === 'LIVE' &&
+      match.participant1 !== null &&
+      match.participant2 !== null &&
+      match.participant1Score !== match.participant2Score && // Not tied
+      isOrganizer
+    )
+  }
+
+  // Helper function to generate round sections for fixture display with scoring controls
+  const getRoundSectionsWithScoring = (fixture: Fixture | null) => {
+    if (!fixture) return null
+    // Get unique round numbers
+    const roundNumbers = Array.from(new Set(fixture.matches.map(m => m.roundNumber))).sort((a, b) => a - b)
+    // Map over round numbers to create round sections
+    return roundNumbers.map(roundNum => {
+      const roundMatches = fixture.matches.filter(m => m.roundNumber === roundNum)
+      const roundName = roundMatches.length > 0 ? roundMatches[0].roundName : `Round ${roundNum + 1}`
+      return (
+        <div key={roundNum} className="fixture-round">
+          <h3 className="text-xl font-bold mb-3">🏆 {roundName}</h3>
+          <div className="space-y-4">
+            {roundMatches.map(match => (
+              <div key={match.id} className="fixture-match-card border rounded-2xl p-4">
+                <div className="flex justify-between items-start">
+                  <span className="font-medium text-gray-700">Match Code:</span>
+                  <span className="text-sm">{match.matchCode}</span>
+                </div>
+
+                {/* Match Status Badge */}
+                <div className="flex items-start mt-2">
+                  <span className="font-medium text-gray-700">Status:</span>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full
+                      ${match.status === 'SCHEDULED' ? 'bg-yellow-100 text-yellow-800' : ''}
+                      ${match.status === 'LIVE' ? 'bg-blue-100 text-blue-800' : ''}
+                      ${match.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : ''}
+                      ${match.status === 'CANCELLED' ? 'bg-gray-100 text-gray-800' : ''}
+                    `}
+                  >
+                    {match.status}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-start mt-2">
+                  <span className="font-medium text-gray-700">Participant 1:</span>
+                  <span className="text-sm">
+                    {match.participant1 ? (
+                      <span>
+                        {match.participant1.name} ({match.participant1.code})
+                      </span>
+                    ) : (
+                      <span className="text-italic text-gray-500">BYE</span>
+                    )}
+                  </span>
+                </div>
+
+                {/* Participant 1 Score Controls */}
+                {canStartMatch(match) && !match.participant1Score && !match.participant2Score ? (
+                  // Show start match button if scores are 0-0 and match is scheduled
+                  <div className="match-start-panel mt-4">
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Winning points</p>
+                    <div className="mt-2 grid grid-cols-3 gap-2">{([15, 21, 30] as const).map(points => <button key={points} type="button" onClick={() => handleSetWinningPoints(match.id, points)} className={`rounded-lg px-2 py-2 text-xs font-black ${(match.winningPoints ?? 21) === points ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200'}`}>{(match.winningPoints ?? 21) === points ? '✓ ' : ''}{points}</button>)}</div>
+                    <p className="mt-2 text-xs text-blue-700">First to {match.winningPoints ?? 21} points wins.</p>
+                    <div className="mt-3 flex justify-end">
+                    {isStartingMatch === match.id ? (
+                      <button
+                        onClick={() => handleStartMatch(match.id)}
+                        className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                      >
+                        Starting...
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleStartMatch(match.id)}
+                        className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                      >
+                        Start Match
+                      </button>
+                    )}</div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-start mt-2">
+                    <span className="font-medium text-gray-700">P1 Score:</span>
+                    <div className="flex items-center space-x-2">
+                      {canScoreMatch(match) && !isScoring ? (
+                        <>
+                          <button
+                            onClick={() => handleUpdateScore(match.id, 'PARTICIPANT_1', -1)}
+                            className="w-6 h-6 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                            disabled={match.participant1Score === 0}
+                            title="Decrease score"
+                            aria-label="Decrease participant 1 score"
+                          >
+                            -
+                          </button>
+                        </>
+                      ) : (
+                        <span className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded text-xs">
+                          -
+                        </span>
+                      )}
+                      <span className="text-sm font-mono">
+                        {match.participant1Score}
+                      </span>
+                      {canScoreMatch(match) && !isScoring ? (
+                        <>
+                          <button
+                            onClick={() => handleUpdateScore(match.id, 'PARTICIPANT_1', 1)}
+                            className="w-6 h-6 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-40"
+                            disabled={match.participant1Score >= (match.winningPoints ?? 21)}
+                            title="Increase score"
+                            aria-label="Increase participant 1 score"
+                          >
+                            +
+                          </button>
+                        </>
+                      ) : (
+                        <span className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded text-xs">
+                          +
+                        </span>
+                      )}
+                    </div>
+                    {isScoring && isScoring.matchId === match.id && isScoring.side === 'PARTICIPANT_1' && (
+                      <span className="text-xs text-blue-500">Updating...</span>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-between items-start mt-2">
+                  <span className="font-medium text-gray-700">Participant 2:</span>
+                  <span className="text-sm">
+                    {match.participant2 ? (
+                      <span>
+                        {match.participant2.name} ({match.participant2.code})
+                      </span>
+                    ) : (
+                      <span className="text-italic text-gray-500">BYE</span>
+                    )}
+                  </span>
+                </div>
+
+                {/* Participant 2 Score Controls */}
+                {canScoreMatch(match) && !match.participant1Score && !match.participant2Score ? (
+                  // Already handled in P1 section, just show scores
+                  <div className="flex justify-between items-start mt-2">
+                    <span className="font-medium text-gray-700">P2 Score:</span>
+                    <span className="text-sm">
+                      {match.participant2Score}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-start mt-2">
+                    <span className="font-medium text-gray-700">P2 Score:</span>
+                    <div className="flex items-center space-x-2">
+                      {canScoreMatch(match) && !isScoring ? (
+                        <>
+                          <button
+                            onClick={() => handleUpdateScore(match.id, 'PARTICIPANT_2', -1)}
+                            className="w-6 h-6 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+                            disabled={match.participant2Score === 0}
+                            title="Decrease score"
+                            aria-label="Decrease participant 2 score"
+                          >
+                            -
+                          </button>
+                        </>
+                      ) : (
+                        <span className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded text-xs">
+                          -
+                        </span>
+                      )}
+                      <span className="text-sm font-mono">
+                        {match.participant2Score}
+                      </span>
+                      {canScoreMatch(match) && !isScoring ? (
+                        <>
+                          <button
+                            onClick={() => handleUpdateScore(match.id, 'PARTICIPANT_2', 1)}
+                            className="w-6 h-6 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-40"
+                            disabled={match.participant2Score >= (match.winningPoints ?? 21)}
+                            title="Increase score"
+                            aria-label="Increase participant 2 score"
+                          >
+                            +
+                          </button>
+                        </>
+                      ) : (
+                        <span className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded text-xs">
+                          +
+                        </span>
+                      )}
+                    </div>
+                    {isScoring && isScoring.matchId === match.id && isScoring.side === 'PARTICIPANT_2' && (
+                      <span className="text-xs text-blue-500">Updating...</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Undo Score Button */}
+                {canUndoScore(match) && !isUndoingScore && (
+                  <div className="flex justify-between items-start mt-2">
+                    {isUndoingScore === match.id ? (
+                      <button
+                        onClick={() => handleUndoScore(match.id)}
+                        className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
+                      >
+                        Undoing...
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleUndoScore(match.id)}
+                        className="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
+                      >
+                        Undo Score
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Complete Match Button */}
+                {canCompleteMatch(match) && !isCompletingMatch && (
+                  <div className="flex justify-between items-start mt-2">
+                    {isCompletingMatch === match.id ? (
+                      <button
+                        onClick={() => handleCompleteMatch(match.id)}
+                        className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                      >
+                        Completing...
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleCompleteMatch(match.id)}
+                        className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                      >
+                        Complete Match
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Winner Display */}
+                {match.winnerId && (
+                  <div className="flex justify-between items-start mt-2">
+                    <span className="font-medium text-gray-700">Winner:</span>
+                    <span className="text-sm font-semibold text-green-600">
+                      {match.participant1?.id === match.winnerId ? match.participant1?.name : match.participant2?.name}
+                    </span>
+                  </div>
+                )}
+
+                {/* Scores Display (when not editing) */}
+                {!canScoreMatch(match) && (
+                  <>
+                    <div className="flex justify-between items-start mt-2">
+                      <span className="font-medium text-gray-700">P1 Score:</span>
+                      <span className="text-sm font-mono">{match.participant1Score}</span>
+                    </div>
+                    <div className="flex justify-between items-start mt-2">
+                      <span className="font-medium text-gray-700">P2 Score:</span>
+                      <span className="text-sm font-mono">{match.participant2Score}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    })
+  }
+
+  if (category.eventType === 'SINGLES') {
+    return (
+      <div className="fixture-arena p-5 sm:p-8">
+        <div className="fixture-hero mb-6">
+          <div><p className="text-sm font-bold uppercase tracking-[.2em] text-blue-300">{tournament.name}</p><h1 className="text-3xl font-black">
+            Singles Fixture
+          </h1></div>
+          <p className="text-sm text-gray-600">
+            {formatDateDisplay(tournament.tournamentDate)} • {tournament.venueName}
+          </p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 p-2 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        <div className="fixture-status mb-6">
+          <h2 className="text-xl font-semibold mb-3">
+            Category: {category.name}
+          </h2>
+          <p className="text-sm text-gray-600">
+          </p>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
+            Registration Phase:
+            {category.registrationPhase === 'OPEN' ? (
+              <span className="text-green-600">Open</span>
+            ) : (
+              <span className="text-red-600">Closed</span>
+            )}
+          </p>
+          <p className="text-sm text-gray-600">
+            Fixture Status:
+            {fixture ? (
+              fixture.status === 'DRAFT' ? (
+                <span className="text-yellow-600">Draft</span>
+              ) : (
+                <span className="text-green-600">Published</span>
+              )
+            ) : (
+              <span className="text-gray-500">Not Generated</span>
+            )}
+          </p>
+        </div>
+        {champion && runnerUp && <div className="mb-6 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4"><p className="text-xs font-bold uppercase tracking-[.16em] text-amber-200">🏆 Winner</p><p className="mt-1 text-lg font-black text-white">{champion.name}</p></div><div className="rounded-2xl border border-slate-300/30 bg-white/10 p-4"><p className="text-xs font-bold uppercase tracking-[.16em] text-slate-300">🥈 Runner-up</p><p className="mt-1 text-lg font-black text-white">{runnerUp.name}</p></div></div>}
+
+        {!fixture && category.registrationPhase === 'CLOSED' && (
+          <div className="mb-4">
+            <button
+              onClick={handleGenerateFixture}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              disabled={isGenerating}
+            >
+              {isGenerating ? 'Generating...' : 'Generate Fixture'}
+            </button>
+          </div>
+        )}
+
+        {fixture && fixture.status === 'DRAFT' && (
+          <div className="mb-4 space-x-3">
+            <button
+              onClick={handleReshuffleFixture}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+              disabled={isReshuffling}
+            >
+              {isReshuffling ? 'Reshuffling...' : 'Re-Shuffle'}
+            </button>
+            <button
+              onClick={handlePublishFixture}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+              disabled={isPublishing}
+            >
+              {isPublishing ? 'Publishing...' : 'Publish Fixture'}
+            </button>
+          </div>
+        )}
+
+        {fixture && (
+          <div className="mt-6 overflow-x-auto">
+            <div className="fixture-rounds">
+              {getRoundSectionsWithScoring(fixture)}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6">
+          <button
+            onClick={() => navigate(`/organizer/tournaments/${tournamentId}/registrations`)}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            Back to Tournament Registrations
+          </button>
+        </div>
+      </div>
+    )
+  } else if (category.eventType === 'DOUBLES') {
+    return (
+      <div className="fixture-arena p-5 sm:p-8">
+        <div className="fixture-hero mb-6">
+          <div><p className="text-sm font-bold uppercase tracking-[.2em] text-blue-300">{tournament.name}</p><h1 className="text-3xl font-black">
+            Doubles Fixture
+          </h1></div>
+          <p className="text-sm text-gray-600">
+            {formatDateDisplay(tournament.tournamentDate)} • {tournament.venueName}
+          </p>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 p-2 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        <div className="fixture-status mb-6">
+          <h2 className="text-xl font-semibold mb-3">
+            Category: {category.name}
+          </h2>
+          <p className="text-sm text-gray-600">
+          </p>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
+            Registration Phase:
+            {category.registrationPhase === 'OPEN' ? (
+              <span className="text-green-600">Open</span>
+            ) : (
+              <span className="text-red-600">Closed</span>
+            )}
+          </p>
+          <p className="text-sm text-gray-600">
+            Fixture Status:
+            {fixture ? (
+              fixture.status === 'DRAFT' ? (
+                <span className="text-yellow-600">Draft</span>
+              ) : (
+                <span className="text-green-600">Published</span>
+              )
+            ) : (
+              <span className="text-gray-500">Not Generated</span>
+            )}
+          </p>
+        </div>
+        {champion && runnerUp && <div className="mb-6 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl border border-amber-300/30 bg-amber-300/10 p-4"><p className="text-xs font-bold uppercase tracking-[.16em] text-amber-200">🏆 Winner</p><p className="mt-1 text-lg font-black text-white">{champion.name}</p></div><div className="rounded-2xl border border-slate-300/30 bg-white/10 p-4"><p className="text-xs font-bold uppercase tracking-[.16em] text-slate-300">🥈 Runner-up</p><p className="mt-1 text-lg font-black text-white">{runnerUp.name}</p></div></div>}
+
+        {!fixture && category.registrationPhase === 'CLOSED' && (
+          <div className="mb-4">
+            <button
+              onClick={handleGenerateFixture}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              disabled={isGenerating}
+            >
+              {isGenerating ? 'Generating...' : 'Generate Fixture'}
+            </button>
+          </div>
+        )}
+
+        {fixture && fixture.status === 'DRAFT' && (
+          <div className="mb-4 space-x-3">
+            <button
+              onClick={handleReshuffleFixture}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
+              disabled={isReshuffling}
+            >
+              {isReshuffling ? 'Reshuffling...' : 'Re-Shuffle'}
+            </button>
+            <button
+              onClick={handlePublishFixture}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+              disabled={isPublishing}
+            >
+              {isPublishing ? 'Publishing...' : 'Publish Fixture'}
+            </button>
+          </div>
+        )}
+
+        {fixture && (
+          <div className="mt-6 overflow-x-auto">
+            <div className="fixture-rounds">
+              {getRoundSectionsWithScoring(fixture)}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6">
+          <button
+            onClick={() => navigate(`/organizer/tournaments/${tournamentId}/registrations`)}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            Back to Tournament Registrations
+          </button>
+        </div>
+      </div>
+    )
+  }
+}
+
+export default CategoryFixturePage
