@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { usePlayerProfileStore } from '@/features/player/store/playerProfileStore'
@@ -6,6 +6,10 @@ import { useTournamentStore } from '@/features/tournaments/store/tournamentStore
 import { useRegistrationStore } from '@/features/registrations/store/registrationStore'
 import { useFixtureStore } from '@/features/fixtures/store/fixtureStore'
 import { AppIcon } from '@/components/mobile/MobileAppShell'
+import ref1Image from '@/assets/ref1.png'
+import ref3Image from '@/assets/ref3.png'
+
+const upcomingArt = [ref1Image, ref3Image, ref3Image]
 
 const formatTournamentDate = (date: string) => {
   const value = new Date(`${date}T00:00:00`)
@@ -36,6 +40,7 @@ const PlayerDashboard = () => {
   const { profile, hasProfile } = usePlayerProfileStore()
   const navigate = useNavigate()
   const tournaments = useTournamentStore(state => state.tournaments)
+  const ensureDemoTournaments = useTournamentStore(state => state.ensureDemoTournaments)
   const registrations = useRegistrationStore(state => state.registrations)
   const fixtures = useFixtureStore(state => state.fixtures)
 
@@ -108,6 +113,8 @@ const PlayerDashboard = () => {
     profile?.fullName?.split(' ')[0] ||
     user?.displayName?.split(' ')[0] ||
     'Player'
+
+  useEffect(() => { ensureDemoTournaments() }, [ensureDemoTournaments])
 
   if (!user) return <div className="p-6 text-center">Please log in</div>
 

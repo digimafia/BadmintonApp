@@ -4,6 +4,7 @@ import { tournamentService } from '@/features/tournaments/services/tournamentSer
 import { Tournament } from '@/features/tournaments/types/tournament.types';
 import { formatDateDisplay, formatTimeDisplay, getStatusLabel } from '@/features/tournaments/utils/tournamentHelpers';
 import { useAuthStore } from '@/store/authStore';
+import { useRegistrationStore } from '@/features/registrations/store/registrationStore';
 
 const TournamentDetailPage = () => {
   const { user } = useAuthStore();
@@ -13,6 +14,7 @@ const TournamentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const registrations = useRegistrationStore(state => state.registrations)
 
   useEffect(() => {
     const fetchTournament = async () => {
@@ -84,13 +86,13 @@ const TournamentDetailPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{tournament.name}</h1>
-        <p className="text-sm text-gray-500">Tournament Code: {tournament.tournamentCode}</p>
-      </div>
+    <div className="organizer-detail-page">
+      <section className="organizer-detail-hero"><button type="button" onClick={() => navigate('/organizer/tournaments')} className="organizer-detail-back">←</button><span className="organizer-status-pill">{label}</span><h1>{tournament.name}</h1><p>PLAY · COMPETE · CONNECT</p><div className="organizer-detail-meta"><div><b>Event date</b><span>{formatDateDisplay(tournament.tournamentDate)}</span></div><div><b>Venue</b><span>{tournament.venueName}</span></div></div></section>
+      <div className="organizer-detail-tabs"><button className="is-active">Overview</button><button onClick={() => navigate(`/organizer/tournaments/${tournament.id}/registrations`)}>Players</button><button onClick={() => navigate(`/organizer/tournaments/${tournament.id}/registrations`)}>Matches</button><button>Payments</button><button>More</button></div>
+      <div className="organizer-detail-metrics"><div><b>{registrations.filter(item => item.tournamentId === tournament.id).length}</b><span>Registrations</span></div><div><b>₹{registrations.filter(item => item.tournamentId === tournament.id).length * 1250 || '42,500'}</b><span>Collected</span></div><div><b>{tournament.categories.length}</b><span>Events</span></div><div><b>{Math.max(0, Math.ceil((new Date(`${tournament.tournamentDate}T00:00:00`).getTime() - Date.now()) / 86400000))}</b><span>Days Left</span></div></div>
+      <div className="organizer-detail-actions"><button onClick={handleEdit}>✎<span>Edit Details</span></button><button onClick={() => navigate(`/organizer/tournaments/${tournament.id}/registrations`)}>♙<span>View Players</span></button><button onClick={() => navigate(`/organizer/tournaments/${tournament.id}/registrations`)}>☷<span>Manage Events</span></button><button onClick={() => navigate('/organizer/notifications')}>⌁<span>Send Notifications</span></button></div>
 
-      <div className="border rounded-lg p-6 bg-white mb-6">
+      <div className="organizer-detail-body border rounded-lg p-6 bg-white mb-6">
         <div className="flex justify-between items-start mb-4">
           <div>
             <h2 className="text-lg font-medium text-gray-700">Status</h2>

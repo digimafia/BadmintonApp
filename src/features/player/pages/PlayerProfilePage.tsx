@@ -1,292 +1,42 @@
+import { useMemo, useState } from 'react'
+import { useLocation, useNavigate, Navigate } from 'react-router-dom'
 import { usePlayerProfileStore } from '@/features/player/store/playerProfileStore'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Navigate } from 'react-router-dom'
 import { useMedalHistoryStore } from '@/features/medals/store/medalHistoryStore'
 import PlayerProfileForm from '@/features/player/components/PlayerProfileForm'
-import { PlayerProfile } from '@/features/player/types/player.types'
-import { MedalHistory } from '@/features/medals/types/medalHistory.types'
-import { useState, useEffect } from 'react'
+import { AppIcon } from '@/components/mobile/MobileAppShell'
+import ref2Image from '@/assets/ref2.png'
+import playerCardImage from '@/assets/playercard.png'
 
 const PlayerProfilePage = () => {
   const { profile, hasProfile } = usePlayerProfileStore()
   const navigate = useNavigate()
   const location = useLocation()
   const isEditRoute = location.pathname === '/player/profile/edit'
-  const medalHistoryStore = useMedalHistoryStore()
-  const [medalHistory, setMedalHistory] = useState<MedalHistory[]>([])
-  const [medalHistoryLoading, setMedalHistoryLoading] = useState<boolean>(false)
-  const [medalHistoryError, setMedalHistoryError] = useState<string | null>(null)
+  const [tab, setTab] = useState('Profile')
+  const medalHistory = useMedalHistoryStore(state => state.medalHistory)
+  const medals = useMemo(() => profile ? medalHistory.filter(medal => medal.playerId === profile.id) : [], [medalHistory, profile?.id])
 
-  // Load medal history when profile loads
-  useEffect(() => {
-    if (hasProfile && profile) {
-      const loadMedalHistory = async () => {
-        setMedalHistoryLoading(true)
-        setMedalHistoryError(null)
-        try {
-          const playerMedals = medalHistoryStore.getPlayerMedalHistory(profile.id)
-          setMedalHistory(playerMedals)
-        } catch (err) {
-          setMedalHistoryError(err instanceof Error ? err.message : 'Failed to load medal history')
-        } finally {
-          setMedalHistoryLoading(false)
-        }
-      }
+  if (!hasProfile && isEditRoute) return <Navigate to="/player/profile" replace />
+  if (!hasProfile) return <PlayerProfileForm onProfileCreated={() => navigate('/player/profile', { replace: true })} />
+  if (isEditRoute && profile) return <PlayerProfileForm profile={profile} onProfileCreated={() => navigate('/player/profile', { replace: true })} />
+  if (!profile) return null
 
-      loadMedalHistory()
-    }
-  }, [hasProfile, profile, medalHistoryStore])
+  const initials = profile.fullName.split(' ').map(name => name[0]).join('').slice(0, 2).toUpperCase()
+  const stats = [
+    ['28', 'Age'],
+    [profile.location.split(',')[0] || 'Chennai', 'Location'],
+    [profile.experienceYears >= 6 ? 'Intermediate' : 'Beginner', 'Skill Level'],
+    ['Right Handed', 'Play Style'],
+  ]
 
-  // If there's no profile and we're on the edit route, redirect to the profile page
-  if (!hasProfile && isEditRoute) {
-    return <Navigate to="/player/profile" replace />
-  }
-
-  const handleProfileCreated = () => {
-    // After creating or updating a profile, if we were on the edit route, go back to view
-    if (isEditRoute) {
-      navigate('/player/profile', { replace: true })
-    }
-  }
-
-  if (!hasProfile) {
-    // No profile, show the create form
-    return <PlayerProfileForm onProfileCreated={handleProfileCreated} />
-  }
-
-  // We have a profile
-  if (isEditRoute) {
-    // Show the edit form with the existing profile
-    return <PlayerProfileForm profile={profile} onProfileCreated={handleProfileCreated} />
-  }
-
-  // Show the profile view
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Profile Header Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-900 p-6 text-white shadow-xl sm:p-8 mb-8">
-            <div className="absolute -right-12 -top-16 h-52 w-52 rounded-full border-[24px] border-emerald-300/10" />
-            <p className="relative mb-5 text-xs font-bold uppercase tracking-[.22em] text-emerald-300">🏸 Player card</p><div className="relative grid grid-cols-1 lg:grid-cols-2 lg:items-start lg:gap-8">
-              {/* Avatar and Info */}
-
-              <div className="flex flex-col items-center lg:items-start lg:mb-0 lg:space-y-4">
-                {profile.profilePhoto ? (
-                  <img
-                    src={profile.profilePhoto}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-emerald-300 shadow-xl"
-                  />
-                ) : (
-                  <div className="w-24 h-24 bg-emerald-300 rounded-full flex items-center justify-center shadow-xl">
-                    <span className="text-emerald-950 font-black text-lg">
-                      {profile.fullName
-                        .split(' ')
-                        .map(n => n[0])
-                        .join('')
-                        .toUpperCase()}
-                    </span>
-                  </div>
-                )}
-                <div className="text-center lg:text-left space-y-3">
-                  <h2 className="text-3xl font-black text-white">
-                    {profile.fullName}
-                  </h2>
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-white/10 text-emerald-200 text-sm font-bold px-3 py-1 rounded-full">
-                      {profile.playerCode}
-                    </div>
-                    <span className={
-                      `px-2 py-1 rounded-full text-sm font-medium
-                      ${profile.profileStatus === 'ACTIVE'
-                        ? 'bg-emerald-300 text-emerald-950'
-                        : 'bg-white/10 text-slate-300'}
-                    `}
-                    >
-                      {profile.profileStatus === 'ACTIVE' ? 'Active' : 'Incomplete'}
-                    </span>
-                  </div>
-                  <div className="text-sm text-slate-300">📍 {profile.location} · {profile.experienceYears} years on court</div>
-                </div>
-              </div>
-
-              {/* Edit Profile Button */}
-              <div className="lg:col-span-2 lg:flex lg:justify-end lg:items-center lg:mt-0">
-                <button
-                  onClick={() => navigate('/player/profile/edit')}
-                  className="px-6 py-3 bg-emerald-400 text-slate-950 rounded-xl font-bold hover:bg-white transition-colors"
-                >
-                  Edit Profile
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid gap-6 mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Age */}
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 text-center">
-                <p className="text-xl font-black text-slate-900">
-                  {profile.age}
-                </p>
-                <p className="text-sm text-gray-500 uppercase tracking-wider">
-                  Age
-                </p>
-              </div>
-              {/* Experience */}
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 text-center">
-                <p className="text-xl font-black text-slate-900">
-                  {profile.experienceYears}
-                </p>
-                <p className="text-sm text-gray-500 uppercase tracking-wider">
-                  Experience
-                </p>
-              </div>
-              {/* Playing Since */}
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 text-center">
-                <p className="text-xl font-black text-slate-900">
-                  {profile.playingSince}
-                </p>
-                <p className="text-sm text-gray-500 uppercase tracking-wider">
-                  Playing Since
-                </p>
-              </div>
-              {/* Regular Player */}
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 text-center">
-                <p className="text-xl font-black text-slate-900">
-                  {profile.regularPlayer ? 'Yes' : 'No'}
-                </p>
-                <p className="text-sm text-gray-500 uppercase tracking-wider">
-                  Player Type
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Personal Information Card */}
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">
-              Player details
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <p className="text-sm font-medium text-gray-500">
-                  Mobile
-                </p>
-                <p className="text-lg font-medium text-gray-900">
-                  {profile.mobile}
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <p className="text-sm font-medium text-gray-500">
-                  Location
-                </p>
-                <p className="text-lg font-medium text-gray-900">
-                  {profile.location}
-                </p>
-              </div>
-              {profile.regularPlayer ? (
-                <>
-                  <div className="grid gap-2">
-                    <p className="text-sm font-medium text-gray-500">
-                      Court/Academy
-                    </p>
-                    <p className="text-lg font-medium text-gray-900">
-                      {profile.courtAcademy}
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <p className="text-sm font-medium text-gray-500">
-                      Profile Status
-                    </p>
-                    <p className="text-lg font-medium text-gray-900">
-                      {profile.profileStatus}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="grid gap-2">
-                  <p className="text-sm font-medium text-gray-500">
-                    Profile Status
-                  </p>
-                  <p className="text-lg font-medium text-gray-900">
-                    {profile.profileStatus}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Medal History Section */}
-          {hasProfile && profile && (
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 mt-8">
-              <h2 className="text-xl font-bold text-slate-900 mb-6">
-                🏆 Achievements & medals
-              </h2>
-
-              {medalHistoryLoading && (
-                <div className="text-center py-8">
-                  Loading medal history...
-                </div>
-              )}
-
-              {medalHistoryError && (
-                <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded">
-                  Error loading medal history: {medalHistoryError}
-                </div>
-              )}
-
-              {!medalHistoryLoading && !medalHistoryError && medalHistory.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No medal history yet. Participate in tournaments to earn medals!
-                </div>
-              )}
-
-              {!medalHistoryLoading && !medalHistoryError && medalHistory.length > 0 && (
-                <div className="space-y-4">
-                  {medalHistory.map(medal => (
-                    <div key={medal.id} className="border p-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 flex-shrink-0">
-                          {medal.medalType === 'GOLD' ? (
-                            <div className="w-full h-full bg-yellow-300 rounded-full flex items-center justify-center">
-                              <span className="text-yellow-800 text-sm font-bold">🥇</span>
-                            </div>
-                          ) : (
-                            <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center">
-                              <span className="text-gray-800 text-sm font-bold">🥈</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex justify-between">
-                            <h3 className="text-lg font-medium text-gray-900">
-                              {medal.tournamentName}
-                            </h3>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded">
-                              {medal.categoryName}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            {medal.eventType} • {medal.position === 'WINNER' ? 'Champion' : 'Runner-Up'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Achieved: {new Date(medal.achievedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+  return <div className="player-profile-reference">
+    <section className="player-profile-hero" style={{ backgroundImage: `linear-gradient(90deg, rgb(5 24 26 / .8) 0%, rgb(5 24 26 / .2) 58%, rgb(5 24 26 / .05) 100%), url(${ref2Image})` }}><button type="button" onClick={() => navigate('/player/dashboard')} className="player-profile-back">←</button><button type="button" className="player-profile-share" aria-label="Share profile">⌯</button><div className="player-profile-hero-info"><div className="player-profile-photo">{profile.profilePhoto ? <img src={profile.profilePhoto} alt="Profile" /> : initials}<i /></div><div><h1>{profile.fullName} <b>✓</b></h1><p>Play · Connect · Compete</p><strong>{profile.playerCode}</strong></div></div></section>
+    <div className="player-profile-stats">{stats.map(([value, label]) => <span key={label}><b>{value}</b>{label}</span>)}</div>
+    <div className="player-profile-tabs">{['Profile', 'Registrations', 'Achievements'].map(item => <button key={item} className={tab === item ? 'is-active' : ''} onClick={() => setTab(item)}>{item}</button>)}</div>
+    {tab === 'Profile' && <><section className="player-profile-section"><div className="player-profile-heading"><h2>About Me</h2><button type="button" onClick={() => navigate('/player/profile/edit')}>✎</button></div><p>Passionate about badminton and always up for friendly matches or tournament practice. Looking for doubles partners to play and improve together!</p></section><section className="player-profile-section"><h2>Preferred Events</h2><div className="player-profile-pills"><b>Men&apos;s Doubles</b><span>Mixed Doubles</span><span>Friendly Match</span></div></section><section className="player-profile-card" style={{ backgroundImage: `linear-gradient(90deg, rgb(5 24 26 / .5), rgb(5 24 26 / .18)), url(${playerCardImage})` }}><div className="player-profile-card-head"><strong>SMASH <em>POINT</em></strong><span>PLAYER CARD</span></div><div className="player-profile-card-main"><div className="player-profile-card-avatar">{initials}</div><div><h3>{profile.fullName} ✓</h3><p>Player ID: {profile.playerCode}</p><small>▥ Intermediate (3.5) &nbsp; ◇ Right Handed</small></div><div className="player-profile-qr">▦</div></div><div className="player-profile-card-footer">PLAY · CONNECT · COMPETE</div></section><div className="player-profile-card-actions"><button type="button">⇩ Download Player Card</button><button type="button">⌯ Share</button></div><section className="player-profile-menu">{[['Personal Information', 'Name, contact, location', 'user'], ['Playing Details', 'Skill level, playing style, preferred events', 'bracket'], ['Achievements', 'Tournaments, medals, ranking', 'trophy'], ['Bank & Payments', 'Receive prize money', 'clipboard'], ['Privacy Settings', 'Manage your visibility', 'user']].map(([title, detail, icon]) => <button key={title} type="button"><AppIcon name={icon as 'user'} /><span><b>{title}</b><small>{detail}</small></span><strong>›</strong></button>)}</section></>}
+    {tab === 'Registrations' && <section className="player-profile-placeholder"><AppIcon name="clipboard" /><h2>My Registrations</h2><p>Manage your tournament entries and match schedule.</p><button type="button" onClick={() => navigate('/player/registrations')}>View Registrations →</button></section>}
+    {tab === 'Achievements' && <section className="player-profile-placeholder"><AppIcon name="trophy" /><h2>Achievements</h2><p>{medals.length ? `${medals.length} tournament achievements recorded.` : 'Your medals and rankings will appear here.'}</p><button type="button" onClick={() => navigate('/player/registrations')}>Browse Tournaments →</button></section>}
+  </div>
 }
 
 export default PlayerProfilePage
