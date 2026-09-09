@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useTournamentStore } from '@/features/tournaments/store/tournamentStore'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createDoublesFixtureDemo } from '@/features/tournaments/services/demoTournamentService'
+import { useRegistrationStore } from '@/features/registrations/store/registrationStore'
+import { AppIcon } from '@/components/mobile/MobileAppShell'
 
 const OrganizerDashboard = () => {
   const user = useAuthStore(state => state.user)
   const tournaments = useTournamentStore(state => state.tournaments)
   const navigate = useNavigate()
+  const ensureDemoTournaments = useTournamentStore(state => state.ensureDemoTournaments)
+
+  useEffect(() => {
+    if (user) ensureDemoTournaments(user)
+  }, [user, ensureDemoTournaments])
 
   // Get tournaments for the current organizer
   const organizerTournaments = useMemo(() => {
@@ -26,45 +33,18 @@ const OrganizerDashboard = () => {
   const draftTournaments = organizerTournaments.filter(t => t.status === 'DRAFT').length
   const pendingApprovalTournaments = organizerTournaments.filter(t => t.status === 'PENDING_ADMIN_APPROVAL').length
   const publishedTournaments = organizerTournaments.filter(t => t.status === 'PUBLISHED').length
+  const registrations = useRegistrationStore(state => state.registrations)
+  const totalRegistrations = registrations.filter(registration => organizerTournaments.some(tournament => tournament.id === registration.tournamentId) && registration.status === 'REGISTERED').length
+  const upcomingTournaments = organizerTournaments.filter(tournament => tournament.status !== 'REJECTED').sort((first, second) => first.tournamentDate.localeCompare(second.tournamentDate)).slice(0, 3)
 
-  return (
-    <div className="space-y-6">
-      <section className="flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-slate-950 to-emerald-900 p-6 text-white sm:flex-row sm:items-end sm:justify-between sm:p-8"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-300">Match control center</p><h1 className="mt-2 text-3xl font-black">Run a smooth tournament.</h1><p className="mt-2 text-sm text-slate-300">Create events, fill draws, and keep every court moving.</p></div><Link to="/organizer/tournaments/new" className="rounded-xl bg-emerald-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-white">+ Create tournament</Link></section>
-      <button type="button" onClick={async () => { if (!user) return; const id = await createDoublesFixtureDemo(user); navigate(`/organizer/tournaments/${id}`) }} className="rounded-xl border border-dashed border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 hover:bg-emerald-100">Create 16-team doubles test tournament</button>
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 p-6 bg-white shadow-sm transition hover:shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Tournaments</h2>
-          <p className="text-gray-600 mb-4">
-            Manage your badminton tournaments. Create new tournaments, view existing ones, and submit them for approval.
-          </p>
-          <Link
-            to="/organizer/tournaments"
-            className="inline-block rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600"
-          >
-            Manage Tournaments
-          </Link>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 p-6 bg-white shadow-sm transition hover:shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Quick Stats</h2>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Total Tournaments</span>
-              <span className="rounded-lg bg-slate-100 px-3 py-1 text-lg font-bold">{totalTournaments}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Draft Tournaments</span>
-              <span className="rounded-lg bg-amber-50 px-3 py-1 text-lg font-bold text-amber-700">{draftTournaments}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Pending Approval</span>
-              <span className="rounded-lg bg-blue-50 px-3 py-1 text-lg font-bold text-blue-700">{pendingApprovalTournaments}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return <div className="organizer-dashboard">
+    <section className="organizer-dashboard-welcome"><div><p>Welcome back,</p><h1>{user?.displayName || 'Organizer'}!</h1><span>Create. Manage. Grow. 🏸</span></div><Link to="/organizer/tournaments/new" className="organizer-create-button"><b>＋</b>Create Tournament</Link></section>
+    <section className="organizer-dashboard-stats"><div><AppIcon name="trophy" /><b>{totalTournaments}</b><span>Total<br />Tournaments</span></div><div><AppIcon name="user" /><b>{totalRegistrations}</b><span>Total<br />Players</span></div><div><AppIcon name="clipboard" /><b>₹{totalRegistrations * 1250 || '1.25L'}</b><span>Total<br />Collections</span></div><div><span className="organizer-star">★</span><b>4.8</b><span>Avg. Rating</span></div></section>
+    <section className="organizer-dashboard-section"><div className="organizer-section-heading"><h2>Upcoming Tournaments</h2><Link to="/organizer/tournaments">View All</Link></div><div className="organizer-event-list">{upcomingTournaments.map(tournament => <button key={tournament.id} type="button" onClick={() => navigate(`/organizer/tournaments/${tournament.id}`)} className="organizer-event-card"><div className="organizer-event-date"><b>{new Date(`${tournament.tournamentDate}T00:00:00`).getDate()}</b><span>{new Date(`${tournament.tournamentDate}T00:00:00`).toLocaleDateString('en-IN', { month: 'short' })}</span></div><div><h3>{tournament.name}</h3><p>⌖ {tournament.venueName}, {tournament.venueAddress}</p><small>{tournament.categories.length} categories · {tournament.status === 'PUBLISHED' ? 'Live' : tournament.status === 'DRAFT' ? 'Draft' : 'Registration'}</small></div><span>›</span></button>)}{upcomingTournaments.length === 0 && <div className="organizer-empty">Create your first tournament to see it here.</div>}</div></section>
+    <section className="organizer-dashboard-section"><div className="organizer-section-heading"><h2>Quick Actions</h2></div><div className="organizer-action-grid"><Link to="/organizer/tournaments"><AppIcon name="trophy" /><span>Manage<br />Tournaments</span></Link><Link to="/organizer/tournaments"><AppIcon name="user" /><span>Players &<br />Registrations</span></Link><Link to="/organizer/tournaments"><AppIcon name="clipboard" /><span>Payments &<br />Payouts</span></Link><Link to="/organizer/tournaments"><AppIcon name="bracket" /><span>Reports &<br />Analytics</span></Link></div></section>
+    <button type="button" onClick={() => navigate('/organizer/tournaments')} className="organizer-analytics-banner"><div><strong>Organize Bigger.</strong><span>Build a stronger badminton community.</span></div><span className="organizer-banner-shuttle">🏸</span></button>
+    <button type="button" onClick={async () => { if (!user) return; const id = await createDoublesFixtureDemo(user); navigate(`/organizer/tournaments/${id}`) }} className="organizer-demo-button">Create 16-team doubles test tournament</button>
+  </div>
 }
 
 export default OrganizerDashboard

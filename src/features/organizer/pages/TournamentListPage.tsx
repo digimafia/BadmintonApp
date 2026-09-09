@@ -42,13 +42,13 @@ const TournamentListPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Tournaments</h1>
+    <div className="organizer-tournament-list">
+      <div className="organizer-list-heading">
+        <div><p>EVENT CONTROL CENTER</p><h1>My Tournaments</h1><span>Manage every tournament from one place.</span></div>
         <div className="flex items-center space-x-3">
           <button
             onClick={() => navigate('/organizer/tournaments/new')}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="organizer-list-create"
           >
             Create Tournament
           </button>
@@ -56,13 +56,13 @@ const TournamentListPage = () => {
       </div>
 
       {tournaments.length === 0 ? (
-        <div className="text-center text-gray-500 py-10">
+        <div className="organizer-empty">
           <p>You haven't created any tournaments yet.</p>
         </div>
       ) : (
         <div className="grid gap-6">
           {/* Responsive grid: 1 column on small screens, 2 on medium, 3 on large */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="organizer-tournament-grid">
             {tournaments.map((tournament) => (
               <TournamentListItem
                 key={tournament.id}

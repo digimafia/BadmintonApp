@@ -25,6 +25,7 @@ interface TournamentStoreState {
   rejectTournament: (id: string, rejectionReason: string, adminId?: string) => Tournament;
   publishTournament: (id: string) => Tournament;
   getTournamentsByOrganizer: (organizerId: string) => Tournament[];
+  ensureDemoTournaments: (organizer?: { id: string; displayName?: string; mobile?: string }) => void;
   // New action for closing category registration
   closeCategoryRegistration: (organizerId: string, tournamentId: string, categoryId: string) => Promise<void>;
   reopenCategoryRegistration: (organizerId: string, tournamentId: string, categoryId: string) => Promise<void>;
@@ -37,6 +38,25 @@ export const useTournamentStore = create<TournamentStoreState>()(
   persist(
     (set, get) => ({
       tournaments: [],
+      ensureDemoTournaments: (organizer) => {
+        if (get().tournaments.length > 0) {
+          if (!organizer) return
+          const demoIds = new Set(['demo-riverside-2025', 'demo-chennai-smash'])
+          const hasDemoTournament = get().tournaments.some(tournament => demoIds.has(tournament.id))
+          if (!hasDemoTournament) return
+          set(state => ({ tournaments: state.tournaments.map(tournament => demoIds.has(tournament.id) ? { ...tournament, organizerId: organizer.id, organizerName: organizer.displayName || tournament.organizerName, organizerMobile: organizer.mobile || tournament.organizerMobile } : tournament) }))
+          return
+        }
+        const now = new Date().toISOString()
+        const organizerId = organizer?.id || 'demo-organizer'
+        const organizerName = organizer?.displayName || 'SmashPoint Chennai'
+        const organizerMobile = organizer?.mobile || '9876500099'
+        const category = (id: string, name: string, eventType: 'SINGLES' | 'DOUBLES') => ({ id, name, eventType, genderEligibility: 'OPEN' as const, medalistsAllowed: true, openPlayersAllowed: true, beginnerOnly: false, pureBeginnerOnly: false, registrationPhase: 'OPEN' as const, registrationClosedAt: null })
+        set({ tournaments: [
+          { id: 'demo-riverside-2025', tournamentCode: 'TRN-2025', organizerId, organizerMobile, organizerName, name: 'Riverside Open 2025', description: 'Open badminton tournament for Chennai players.', tournamentDate: '2025-04-12', reportingTime: '08:00', registrationCloseDate: '2025-04-08', registrationCloseTime: '23:59', venueName: 'Riverside Sports Center', venueAddress: 'Chennai', mapLink: 'https://www.google.com/maps/search/?api=1&query=Riverside+Sports+Center+Chennai', format: 'KNOCKOUT', categories: [category('demo-riverside-ms', "Men's Singles", 'SINGLES'), category('demo-riverside-md', "Men's Doubles", 'DOUBLES'), category('demo-riverside-mix', 'Mixed Doubles', 'DOUBLES')], generalRules: ['Standard badminton rules apply'], prizes: 'Trophies and medals', shuttle: 'Yonex Mavis 350', scoringFormat: '21 points rally scoring', status: 'PUBLISHED', createdAt: now, updatedAt: now, publishedAt: now },
+          { id: 'demo-chennai-smash', tournamentCode: 'TRN-2026', organizerId, organizerMobile, organizerName, name: 'Chennai Smash League', description: 'Friendly competitive league for all levels.', tournamentDate: '2025-04-20', reportingTime: '09:00', registrationCloseDate: '2025-04-16', registrationCloseTime: '23:59', venueName: 'Smash Arena', venueAddress: 'OMR, Chennai', mapLink: 'https://www.google.com/maps/search/?api=1&query=Smash+Arena+OMR+Chennai', format: 'LEAGUE_KNOCKOUT', categories: [category('demo-smash-ms', "Men's Singles", 'SINGLES'), category('demo-smash-md', "Men's Doubles", 'DOUBLES')], generalRules: ['Fair play and sportsmanship required'], prizes: 'Medals for finalists', shuttle: 'Yonex AS-30', scoringFormat: '21 points rally scoring', status: 'PUBLISHED', createdAt: now, updatedAt: now, publishedAt: now },
+        ] })
+      },
       tournament: null,
       loading: false,
       error: null,

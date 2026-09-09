@@ -31,13 +31,17 @@ const CreateTournamentPage = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+    <div className="organizer-form-shell">
+      <div className="organizer-form-topbar"><button type="button" onClick={() => navigate(-1)} aria-label="Go back">←</button><h1>{isEditMode ? 'Edit Tournament' : 'Create Tournament'}</h1><span>⋯</span></div>
+      <div className="organizer-form-steps"><div className="organizer-form-step is-active"><b>1</b>Basic Info</div><div className="organizer-form-step"><b>2</b>Events &amp; Categories</div><div className="organizer-form-step"><b>3</b>Venue &amp; Schedule</div><div className="organizer-form-step"><b>4</b>Review &amp; Publish</div></div>
+      <section className="organizer-form-card"><h2>Basic Information</h2><p>Set up the details players will see on your tournament page.</p>
       <TournamentForm
         onSubmitSuccess={handleSubmitSuccess}
         onSubmitError={handleSubmitError}
         onSubmitForApprovalSuccess={handleSubmitForApprovalSuccess}
         onSubmitForApprovalError={handleSubmitForApprovalError}
       />
+      </section>
     </div>
   );
 };

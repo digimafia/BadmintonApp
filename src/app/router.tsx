@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import HomePage from '@/pages/public/HomePage'
 import LoginPage from '@/pages/public/LoginPage'
+import RegisterPage from '@/pages/public/RegisterPage'
 import PlayerDashboard from '@/pages/player/PlayerDashboard'
 import OrganizerDashboard from '@/pages/organizer/OrganizerDashboard'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
@@ -29,6 +30,10 @@ import TournamentRegistrationsPage from '@/features/organizer/pages/TournamentRe
 import MatchScoringPage from '@/features/organizer/pages/MatchScoringPage'
 import CategoryFixturePage from '@/features/organizer/pages/CategoryFixturePage'
 import PlayerNotificationsPage from '@/features/notifications/pages/PlayerNotificationsPage'
+import PlayerDirectoryPage from '@/features/player/pages/PlayerDirectoryPage'
+import PlayerVenuesPage from '@/features/player/pages/PlayerVenuesPage'
+import PlayerPlayRequestPage from '@/features/player/pages/PlayerPlayRequestPage'
+import PlayerPublicProfilePage from '@/features/player/pages/PlayerPublicProfilePage'
 import OrganizerNotificationsPage from '@/features/notifications/pages/OrganizerNotificationsPage'
 import AdminNotificationsPage from '@/features/notifications/pages/AdminNotificationsPage'
 
@@ -40,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />
+  },
+  {
+    path: '/register',
+    element: <RegisterPage />
   },
   {
     path: '/player',
@@ -55,6 +64,10 @@ const router = createBrowserRouter([
       { path: 'dashboard', element: <PlayerDashboard /> },
       { path: 'profile', element: <PlayerProfilePage /> },
       { path: 'profile/edit', element: <PlayerProfilePage /> },
+      { path: 'players', element: <PlayerDirectoryPage /> },
+      { path: 'players/:playerId', element: <PlayerPublicProfilePage /> },
+      { path: 'venues', element: <PlayerVenuesPage /> },
+      { path: 'play-request', element: <PlayerPlayRequestPage /> },
       // Player tournament routes
       {
         path: 'tournaments',
